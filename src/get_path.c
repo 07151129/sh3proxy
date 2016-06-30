@@ -7,7 +7,7 @@
 #include "get_path.h"
 
 char* repl_getAbsPathImpl(enum resource_t type, const char* relPath) {
-    fprintf(stderr, "getAbsPathImpl: %d %s\n", type, type != SAVE ? relPath : NULL);
+    // fprintf(stdout, "getAbsPathImpl: %d %s\n", type, relPath);
 
     if (type > SOUND) { /* default case, will abort */
         return (char*)0x68a7b4;
@@ -28,10 +28,10 @@ char* repl_getAbsPathImpl(enum resource_t type, const char* relPath) {
         ret = calloc(len, sizeof(char));
         snprintf(ret, len, "%s\\%s", cwd, relPath);
     }
-    else { /* SAVE type doesn't have relPath */
-        len = strlen(cwd) + strlen("\\savedata\\") + 1;
+    else {
+        len = strlen(cwd) + strlen("\\savedata\\") + strlen(relPath) + 1;
         ret = calloc(len, sizeof(char));
-        snprintf(ret, len, "%s\\savedata\\", cwd);
+        snprintf(ret, len, "%s\\savedata\\%s", cwd, relPath);
         static char* savePath;
         if (!savePath) {
             savePath = strdup(ret);
@@ -42,7 +42,7 @@ char* repl_getAbsPathImpl(enum resource_t type, const char* relPath) {
         }
     }
 
-    fprintf(stderr, "ret: %s\n", ret);
+    // fprintf(stderr, "ret: %s\n", ret);
 
     return ret;
 }
