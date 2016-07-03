@@ -3,6 +3,8 @@
 
 #include <stdbool.h>
 
-extern bool useCwd;
+extern bool useCwd, sh2Refs;
+extern int resX, resY, texRes;
+extern bool fullscreen;
 
 #endif

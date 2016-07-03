@@ -8,6 +8,7 @@ enum resource_t {
     SOUND
 };
 
+int repl_updateSH2InstallDir();
 char* repl_getAbsPathImpl(enum resource_t type, const char*);
 
 #endif

@@ -6,6 +6,13 @@
 
 #include "get_path.h"
 
+int repl_updateSH2InstallDir() {
+    *(uint8_t*)0xbcc250 = 1; /* gRegHasSH2 */
+    *(uint8_t*)0xbcc251 = 1; /* gCheckedRegSH2 */
+    
+    return 1;
+}
+
 char* repl_getAbsPathImpl(enum resource_t type, const char* relPath) {
     // fprintf(stdout, "getAbsPathImpl: %d %s\n", type, relPath);
 

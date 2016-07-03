@@ -5,23 +5,20 @@
 #include "patch.h"
 #include "get_path.h"
 #include "prefs.h"
+#include "video.h"
 
 bool useCwd, disableSM, sh2Refs;
+int resX, resY, texRes;
+bool fullscreen;
 
-static int repl_sm(int arg) {
-    return 1;
-}
-
-static int repl_updateSH2InstallDir() {
-    *(uint8_t*)0xbcc250 = 1; /* gRegHasSH2 */
-    *(uint8_t*)0xbcc251 = 1; /* gCheckedRegSH2 */
-    
+static int repl_smWarn(int arg) {
     return 1;
 }
 
 static void init(HANDLE hModule) {
     fprintf(stderr, "sh3proxy: init\n");
 
+    /* FIXME: More reliable way of checking */
     if (strncmp((char*)0x68A6DC, "SILENT HILL 3", strlen("SILENT HILL 3"))) {
         fprintf(stderr, "sh3proxy: target doesn't seem to be SH3, not patching anything\n");
         return;
@@ -36,9 +33,39 @@ static void init(HANDLE hModule) {
     if (useCwd)
         replaceFuncAtAddr((void*)0x5f1130, repl_getAbsPathImpl, NULL);
     if (disableSM)
-        replaceFuncAtAddr((void*)0x401000, repl_sm, NULL);
-    if (sh2Refs)
+        replaceFuncAtAddr((void*)0x401000, repl_smWarn, NULL);
+    if (sh2Refs) /* TODO: Test this */
         replaceFuncAtAddr((void*)0x5e9760, repl_updateSH2InstallDir, NULL);
+
+    bool patchVideo = (GetPrivateProfileInt("Video", "Enable", 0, ".\\sh3proxy.ini") == 1);
+    if (patchVideo) {
+        resX = GetPrivateProfileInt("Video", "SizeX", 1280, ".\\sh3proxy.ini");
+        resY = GetPrivateProfileInt("Video", "SizeY", 720, ".\\sh3proxy.ini");
+        texRes = GetPrivateProfileInt("Video", "TexRes", 1024, ".\\sh3proxy.ini");
+        fullscreen = (GetPrivateProfileInt("Video", "Fullscreen", 1, ".\\sh3proxy.ini") == 1);
+
+        int cnt = 0;
+        __asm__ ("popcnt %1, %0;"
+                : "=r"(cnt)
+                : "r"(texRes)
+                :);
+
+        if (cnt > 1) /* Must be pow2 */
+            texRes &= (1 << (8 * sizeof(int) - __builtin_clz(texRes) - 1));
+
+        fprintf(stderr, "texRes: %d\n", texRes);
+        /* Clamp */
+        if (texRes > 4096)
+            texRes = 4096;
+        if (texRes < 256)
+            texRes = 256;
+
+        replaceFuncAtAddr((void*)0x4168e0, repl_getSizeX, NULL);
+        replaceFuncAtAddr((void*)0x4168f0, repl_getSizeY, NULL);
+        replaceFuncAtAddr((void*)0x416c90, repl_isFullscreen, NULL);
+        replaceFuncAtAddr((void*)0x416ae0, repl_setSizeXY, NULL);
+        patchVideoInit();
+    }
 }
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD reason, LPVOID lpReserved) {

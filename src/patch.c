@@ -4,16 +4,6 @@
 
 static uintptr_t jmp_ptrs[128];
 
-static long getpagesize(void) {
-    static long sz = 0;
-    if (!sz) {
-        SYSTEM_INFO inf;
-        GetSystemInfo (&inf);
-        sz = inf.dwPageSize;
-    }
-    return sz;
-}
-
 bool replaceFuncAtAddr(void* src, void* repl, uint8_t bak[static 6]) {
     if (!src || !repl)
         return false;
@@ -21,13 +11,6 @@ bool replaceFuncAtAddr(void* src, void* repl, uint8_t bak[static 6]) {
     static size_t i;
     /* No room in ptr table to store repl */
     if (i >= sizeof(jmp_ptrs) / sizeof(*jmp_ptrs))
-        return false;
-
-    /* We only need the first page */
-    void* src_aligned = (void*)((uintptr_t)src & ~(getpagesize() - 1));
-    DWORD old_prot = 0;
-
-    if (!VirtualProtect(src_aligned, getpagesize(), PAGE_READWRITE, &old_prot))
         return false;
 
     jmp_ptrs[i] = (uint32_t)repl;
@@ -41,11 +24,25 @@ bool replaceFuncAtAddr(void* src, void* repl, uint8_t bak[static 6]) {
                        (ptr & 0xff000000) >> 0x18,
                        };
 
-    if (bak)
-        memcpy(bak, src, sizeof(bak));
-    memcpy(src, patch, sizeof(patch));
+    patchText(src, patch, bak, sizeof(patch));
 
-    VirtualProtect(src_aligned, getpagesize(), PAGE_EXECUTE_READ, &old_prot);
+    return true;
+}
+
+bool patchText(void* dst, const uint8_t* repl, uint8_t* bak, size_t replSz) {
+    if (!dst || !repl)
+        return false;
+
+    DWORD old_prot = 0;
+
+    if (!VirtualProtect(dst, replSz, PAGE_READWRITE, &old_prot))
+        return false;
+
+    if (bak)
+        memcpy(bak, dst, replSz);
+    memcpy(dst, repl, replSz);
+
+    VirtualProtect(dst, replSz, PAGE_EXECUTE_READ, &old_prot);
 
     return true;
 }

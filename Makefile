@@ -9,7 +9,8 @@ include config.mk
 SRC := \
 	src/main.c \
 	src/patch.c \
-	src/get_path.c
+	src/get_path.c \
+	src/video.c
 
 SRC_ASM := \
 	src/export.S
