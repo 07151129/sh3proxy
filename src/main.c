@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <windows.h>
+#define _USE_MATH_DEFINES
+#include <tgmath.h>
 
 #include "patch.h"
 #include "get_path.h"
@@ -11,9 +13,18 @@ bool useCwd, disableSM, sh2Refs;
 int resX, resY, texRes;
 bool fullscreen;
 
+float projH, projV;
+
+static inline
+float toRad(float a) {
+    return a * M_PI / 180.0f;
+}
+
 static int repl_smWarn(int arg) {
     return 1;
 }
+
+void repl_setTransform();
 
 static void init(HANDLE hModule) {
     fprintf(stderr, "sh3proxy: init\n");
@@ -43,6 +54,7 @@ static void init(HANDLE hModule) {
         resY = GetPrivateProfileInt("Video", "SizeY", 720, ".\\sh3proxy.ini");
         texRes = GetPrivateProfileInt("Video", "TexRes", 1024, ".\\sh3proxy.ini");
         fullscreen = (GetPrivateProfileInt("Video", "Fullscreen", 1, ".\\sh3proxy.ini") == 1);
+        float fovX = (float)GetPrivateProfileInt("Video", "FovX", 90, ".\\sh3proxy.ini");
 
         int cnt = 0;
         __asm__ ("popcnt %1, %0;"
@@ -53,18 +65,23 @@ static void init(HANDLE hModule) {
         if (cnt > 1) /* Must be pow2 */
             texRes &= (1 << (8 * sizeof(int) - __builtin_clz(texRes) - 1));
 
-        fprintf(stderr, "texRes: %d\n", texRes);
         /* Clamp */
         if (texRes > 4096)
             texRes = 4096;
         if (texRes < 256)
             texRes = 256;
+        
+        projH = 1.0f / tan(toRad(fovX / 2.0f));
+        projV = -1.0f / ((float)resY / (float)resX * tan(toRad(fovX / 2.0f)));
 
         replaceFuncAtAddr((void*)0x4168e0, repl_getSizeX, NULL);
         replaceFuncAtAddr((void*)0x4168f0, repl_getSizeY, NULL);
         replaceFuncAtAddr((void*)0x416c90, repl_isFullscreen, NULL);
         replaceFuncAtAddr((void*)0x416ae0, repl_setSizeXY, NULL);
-        patchVideoInit();
+        replaceFuncAtAddr((void*)0x67bba7, repl_setTransform, NULL);
+
+        if (!patchVideoInit())
+            fprintf(stderr, "sh3proxy: video patching failed\n");
     }
 }
 
