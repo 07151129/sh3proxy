@@ -34,8 +34,10 @@ void repl_setTransform();
 static void init(HANDLE hModule) {
     fprintf(stderr, "sh3proxy: init\n");
 
-    /* FIXME: More reliable way of checking */
-    if (strncmp((char*)0x68A6DC, "SILENT HILL 3", strlen("SILENT HILL 3"))) {
+    char filename[1024];
+    GetModuleFileNameA(NULL, filename, sizeof(filename));
+    if (strstr(filename, "sh3.exe") == NULL ||
+        strncmp((char*)0x68A6DC, "SILENT HILL 3", strlen("SILENT HILL 3"))) {
         fprintf(stderr, "sh3proxy: target doesn't seem to be SH3, not patching anything\n");
         return;
     }
