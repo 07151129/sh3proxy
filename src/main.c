@@ -20,8 +20,13 @@ float toRad(float a) {
     return a * M_PI / 180.0f;
 }
 
-static int repl_smWarn(int arg) {
-    return 1;
+__attribute__((section(".relocated")))
+uint8_t reloc_smWarn[90];
+
+int repl_smWarn(int arg) {
+    if (arg == 8)
+        return 1;
+    return ((int (*)(int))(void*)reloc_smWarn)(arg);
 }
 
 void repl_setTransform();
@@ -41,10 +46,25 @@ static void init(HANDLE hModule) {
     disableSM = (GetPrivateProfileInt("Patches", "DisableSM", 0, ".\\sh3proxy.ini") == 1);
     sh2Refs = (GetPrivateProfileInt("Patches", "SH2Refs", 0, ".\\sh3proxy.ini") == 1);
 
-    if (useCwd)
+    if (useCwd) { /* FIXME for windows */
+        uint8_t patch[] = {0x90, 0x90, 0x90, 0x90, 0x90};
+        patchText((void*)0x5f120a, patch, NULL, sizeof(patch));
         replaceFuncAtAddr((void*)0x5f1130, repl_getAbsPathImpl, NULL);
-    if (disableSM)
-        replaceFuncAtAddr((void*)0x401000, repl_smWarn, NULL);
+    }
+    if (disableSM) {
+        VirtualProtect(reloc_smWarn, sizeof(reloc_smWarn), PAGE_READWRITE, NULL);
+        replaceFuncAtAddr((void*)0x401000, repl_smWarn, reloc_smWarn);
+        memcpy((uint8_t*)(reloc_smWarn + 6), (uint8_t*)0x401006, 90 - 6);
+        uint32_t disp = (uint32_t)((uint8_t*)0x416930 - (uint8_t*)reloc_smWarn - 48 - 2);
+        uint8_t patch[] = {0xe8, /* call *disp(%rip) */
+                           (disp & 0xff),
+                           (disp & 0xff00) >> 0x8,
+                           (disp & 0xff0000) >> 0x10,
+                           (disp & 0xff000000) >> 0x18
+                           };
+        memcpy((uint8_t*)(reloc_smWarn + 45), patch, sizeof(patch));
+        VirtualProtect(reloc_smWarn, sizeof(reloc_smWarn), PAGE_EXECUTE_READ, NULL);
+    }
     if (sh2Refs) /* TODO: Test this */
         replaceFuncAtAddr((void*)0x5e9760, repl_updateSH2InstallDir, NULL);
 
@@ -86,8 +106,6 @@ static void init(HANDLE hModule) {
 }
 
 BOOL APIENTRY DllMain(HANDLE hModule, DWORD reason, LPVOID lpReserved) {
-    (void)lpReserved;
-
     switch (reason) {
         case DLL_PROCESS_ATTACH:
             init(hModule);

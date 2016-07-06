@@ -13,11 +13,13 @@ int repl_updateSH2InstallDir() {
     return 1;
 }
 
-char* repl_getAbsPathImpl(enum resource_t type, const char* relPath) {
-    // fprintf(stdout, "getAbsPathImpl: %d %s\n", type, relPath);
+void* (*target_malloc)(size_t) = (void*)0x662f9b;
 
-    if (type > SOUND) { /* default case, will abort */
-        return (char*)0x68a7b4;
+char* repl_getAbsPathImpl(enum resource_t type, const char* relPath) {
+    char* ret = NULL;
+    if (type > SOUND) { /* default case */
+        ret = target_malloc(strlen(relPath) + strlen((char*)0x68a7b4));
+        return ret;
     }
 
     static char* cwd;
@@ -29,15 +31,14 @@ char* repl_getAbsPathImpl(enum resource_t type, const char* relPath) {
     /* FIXME: Locking */
     
     size_t len = 0;
-    char* ret = NULL;
     if (type != SAVE) {
         len = strlen(cwd) + strlen(relPath) + strlen("\\") + 1;
-        ret = calloc(len, sizeof(char));
+        ret = target_malloc(len);
         snprintf(ret, len, "%s\\%s", cwd, relPath);
     }
     else {
         len = strlen(cwd) + strlen("\\savedata\\") + strlen(relPath) + 1;
-        ret = calloc(len, sizeof(char));
+        ret = target_malloc(len);
         snprintf(ret, len, "%s\\savedata\\%s", cwd, relPath);
         static char* savePath;
         if (!savePath) {
