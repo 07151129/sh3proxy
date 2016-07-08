@@ -78,6 +78,7 @@ static void init(HANDLE hModule) {
         texRes = GetPrivateProfileInt("Video", "TexRes", 1024, ".\\sh3proxy.ini");
         fullscreen = (GetPrivateProfileInt("Video", "Fullscreen", 1, ".\\sh3proxy.ini") == 1);
         float fovX = (float)GetPrivateProfileInt("Video", "FovX", 90, ".\\sh3proxy.ini");
+        bool correctFog = (GetPrivateProfileInt("Video", "CorrectFog", 1, ".\\sh3proxy.ini") == 1);
 
         int cnt = 0;
         __asm__ ("popcnt %1, %0;"
@@ -103,6 +104,16 @@ static void init(HANDLE hModule) {
         replaceFuncAtAddr((void*)0x416ae0, repl_setSizeXY, NULL);
         // replaceFuncAtAddr((void*)0x67bba7, repl_setTransform, NULL);
         replaceFuncAtAddr((void*)0x43beb0, repl_calculateProjMatrix, NULL);
+
+        if (correctFog) {
+            float ratio = (float)resX / (float)resY;
+
+            DWORD old_prot = 0;
+            VirtualProtect((void*)0x690634, 2 * sizeof(float), PAGE_READWRITE, &old_prot);
+            *(float*)0x690634 = -ratio; /* gFogRateBack */
+            *(float*)0x690638 = ratio; /* gFogRateFw */
+            VirtualProtect((void*)0x690634, 2 * sizeof(float), old_prot, NULL);
+        }
 
         if (!patchVideoInit())
             fprintf(stderr, "sh3proxy: video patching failed\n");

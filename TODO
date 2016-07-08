@@ -5,5 +5,5 @@
 [X] Video resolution (screen vs framebuffer)
 [ ] Multisampling
 [X] Video aspect rate
-[ ] Fog density
+[X] Fog density
 [X] FOV
