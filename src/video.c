@@ -52,3 +52,16 @@ bool patchVideoInit() {
 
     return ret;
 }
+
+__attribute__((fastcall))
+void printMat16(float* mat) {
+    fprintf(stderr, "mat16 at 0x%x:\n"
+                    "%f %f %f %f\n"
+                    "%f %f %f %f\n"
+                    "%f %f %f %f\n"
+                    "%f %f %f %f\n", mat,
+                    mat[0], mat[1], mat[2], mat[3],
+                    mat[4], mat[5], mat[6], mat[7],
+                    mat[8], mat[9], mat[10], mat[11],
+                    mat[12], mat[13], mat[14], mat[15]);
+}

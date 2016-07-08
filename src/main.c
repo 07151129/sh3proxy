@@ -13,7 +13,7 @@ bool useCwd, disableSM, sh2Refs;
 int resX, resY, texRes;
 bool fullscreen;
 
-float projH, projV;
+float projH;
 
 static inline
 float toRad(float a) {
@@ -30,6 +30,7 @@ int repl_smWarn(int arg) {
 }
 
 void repl_setTransform();
+void repl_calculateProjMatrix();
 
 static void init(HANDLE hModule) {
     fprintf(stderr, "sh3proxy: init\n");
@@ -93,14 +94,15 @@ static void init(HANDLE hModule) {
         if (texRes < 256)
             texRes = 256;
         
-        projH = 1.0f / tan(toRad(fovX / 2.0f));
-        projV = -1.0f / ((float)resY / (float)resX * tan(toRad(fovX / 2.0f)));
+        projH = sqrt(1.0f / (1.54f * tan(toRad(fovX) / 2.0f)));
+        // fprintf(stderr, "projH: %f\n", projH);
 
         replaceFuncAtAddr((void*)0x4168e0, repl_getSizeX, NULL);
         replaceFuncAtAddr((void*)0x4168f0, repl_getSizeY, NULL);
         replaceFuncAtAddr((void*)0x416c90, repl_isFullscreen, NULL);
         replaceFuncAtAddr((void*)0x416ae0, repl_setSizeXY, NULL);
-        replaceFuncAtAddr((void*)0x67bba7, repl_setTransform, NULL);
+        // replaceFuncAtAddr((void*)0x67bba7, repl_setTransform, NULL);
+        replaceFuncAtAddr((void*)0x43beb0, repl_calculateProjMatrix, NULL);
 
         if (!patchVideoInit())
             fprintf(stderr, "sh3proxy: video patching failed\n");

@@ -4,6 +4,6 @@
 [ ] SH2 references without proper save
 [X] Video resolution (screen vs framebuffer)
 [ ] Multisampling
-[ ] Video aspect rate
+[X] Video aspect rate
 [ ] Fog density
-[ ] FOV
+[X] FOV

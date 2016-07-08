@@ -21,4 +21,4 @@ LDFLAGS := \
     -m$(ARCH) \
     -shared \
     -Wl,--enable-auto-import \
-    --enable-stdcall-fixup
+    -Wl,--enable-stdcall-fixup
