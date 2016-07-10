@@ -102,6 +102,8 @@ static void init(HANDLE hModule) {
         replaceFuncAtAddr((void*)0x4168f0, repl_getSizeY, NULL);
         replaceFuncAtAddr((void*)0x416c90, repl_isFullscreen, NULL);
         replaceFuncAtAddr((void*)0x416ae0, repl_setSizeXY, NULL);
+        replaceFuncAtAddr((void*)0x416ba0, repl_416ba0, NULL);
+        replaceFuncAtAddr((void*)0x416b90, repl_setRefreshRate, NULL);
         // replaceFuncAtAddr((void*)0x67bba7, repl_setTransform, NULL);
         replaceFuncAtAddr((void*)0x43beb0, repl_calculateProjMatrix, NULL);
 

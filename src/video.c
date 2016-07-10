@@ -18,6 +18,15 @@ int repl_isFullscreen() {
     return (int)fullscreen;
 }
 
+int repl_416ba0(int unk0) {
+    return 0;
+}
+
+int repl_setRefreshRate(int rate) {
+    /* Disable refresh rate reset */
+    return 0;
+}
+
 int repl_setSizeXY(int x, int y) {
     /* d3d8 device will be reset, so make sure
      * the mode is correct
