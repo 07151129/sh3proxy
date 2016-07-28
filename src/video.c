@@ -66,6 +66,18 @@ bool patchVideoInit() {
     return ret;
 }
 
+bool patchEnableDOF() {
+    bool ret = true;
+
+    uint8_t patch[] = {0x90, 0x90, 0x90, 0x90, 0x90};
+    ret = patchText((void*)0x41b9d4, patch, NULL, sizeof(patch));
+    ret = patchText((void*)0x41ba7c, patch, NULL, sizeof(patch));
+
+    *(uint8_t*)0x72c866 = 0; /* gEnableDOF */
+
+    return ret;
+}
+
 __attribute__((fastcall))
 void printMat16(float* mat) {
     fprintf(stderr, "mat16 at 0x%x:\n"

@@ -96,6 +96,7 @@ static void init(HANDLE hModule) {
         float fovX = (float)GetPrivateProfileInt("Video", "FovX", 90, ".\\sh3proxy.ini");
         bool correctFog = (GetPrivateProfileInt("Video", "CorrectFog", 1, ".\\sh3proxy.ini") == 1);
         bool fixJitter = (GetPrivateProfileInt("Video", "FixFramerateJitter", 0, ".\\sh3proxy.ini") == 1);
+        bool disableDOF = (GetPrivateProfileInt("Video", "DisableDOF", 0, ".\\sh3proxy.ini") == 1);
 
         int cnt = 0;
         __asm__ ("popcnt %1, %0;"
@@ -123,7 +124,7 @@ static void init(HANDLE hModule) {
         replaceFuncAtAddr((void*)0x416b90, repl_setRefreshRate, NULL);
         // replaceFuncAtAddr((void*)0x67bba7, repl_setTransform, NULL);
         replaceFuncAtAddr((void*)0x43beb0, repl_calculateProjMatrix, NULL);
-        
+
         if (fixJitter)
             replaceFuncAtAddr((void*)0x41b250, repl_41b250, NULL);
 
@@ -136,6 +137,9 @@ static void init(HANDLE hModule) {
             *(float*)0x690638 = ratio; /* gFogRateFw */
             VirtualProtect((void*)0x690634, 2 * sizeof(float), old_prot, NULL);
         }
+
+        if (disableDOF)
+            patchEnableDOF();
 
         if (!patchVideoInit())
             fprintf(stderr, "sh3proxy: video patching failed\n");
