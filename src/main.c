@@ -48,8 +48,16 @@ static void init(HANDLE hModule) {
     useCwd = (GetPrivateProfileInt("Patches", "UseCWD", 0, ".\\sh3proxy.ini") == 1);
     disableSM = (GetPrivateProfileInt("Patches", "DisableSM", 0, ".\\sh3proxy.ini") == 1);
     sh2Refs = (GetPrivateProfileInt("Patches", "SH2Refs", 0, ".\\sh3proxy.ini") == 1);
+    bool whiteBorderFix = (GetPrivateProfileInt("Patches", "Win10WhiteBorderFix", 0, ".\\sh3proxy.ini") == 1);
 
-    if (useCwd) { /* FIXME for windows */
+    if (useCwd) {
+        /* FIXME for windows:
+         * We allocate memory in repl_getAbsPathImpl,
+         * which seems to be incompatible with whatever
+         * allocator the game uses. This patch disables
+         * the corresponding `free' call, at a cost of
+         * small memory leak during initialisation.
+         */
         uint8_t patch[] = {0x90, 0x90, 0x90, 0x90, 0x90};
         patchText((void*)0x5f120a, patch, NULL, sizeof(patch));
         replaceFuncAtAddr((void*)0x5f1130, repl_getAbsPathImpl, NULL);
@@ -57,6 +65,10 @@ static void init(HANDLE hModule) {
     if (disableSM) {
         VirtualProtect(reloc_smWarn, sizeof(reloc_smWarn), PAGE_READWRITE, NULL);
         replaceFuncAtAddr((void*)0x401000, repl_smWarn, reloc_smWarn);
+
+        /* Relocate message routine: we still need
+         * it for other types of messages
+         */
         memcpy((uint8_t*)(reloc_smWarn + 6), (uint8_t*)0x401006, 90 - 6);
         uint32_t disp = (uint32_t)((uint8_t*)0x416930 - (uint8_t*)reloc_smWarn - 48 - 2);
         uint8_t patch[] = {0xe8, /* call *disp(%rip) */
@@ -68,8 +80,12 @@ static void init(HANDLE hModule) {
         memcpy((uint8_t*)(reloc_smWarn + 45), patch, sizeof(patch));
         VirtualProtect(reloc_smWarn, sizeof(reloc_smWarn), PAGE_EXECUTE_READ, NULL);
     }
-    if (sh2Refs) /* TODO: Test this */
+    if (sh2Refs)
         replaceFuncAtAddr((void*)0x5e9760, repl_updateSH2InstallDir, NULL);
+    if (whiteBorderFix) {
+        uint8_t patch[] = {0x68, 0x0, 0x0, 0x0, 0x0, /* push WS_EX_LEFT */};
+        patchText((void*)0x403042, patch, NULL, sizeof(patch));
+    }
 
     bool patchVideo = (GetPrivateProfileInt("Video", "Enable", 0, ".\\sh3proxy.ini") == 1);
     if (patchVideo) {
