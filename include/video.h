@@ -5,6 +5,7 @@ int repl_getSizeX();
 int repl_getSizeY();
 bool patchVideoInit();
 bool patchEnableDOF();
+bool patchCutscenesBorder();
 int repl_isFullscreen();
 int repl_setSizeXY(int, int);
 int repl_416ba0(int unk0);

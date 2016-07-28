@@ -97,6 +97,7 @@ static void init(HANDLE hModule) {
         bool correctFog = (GetPrivateProfileInt("Video", "CorrectFog", 1, ".\\sh3proxy.ini") == 1);
         bool fixJitter = (GetPrivateProfileInt("Video", "FixFramerateJitter", 0, ".\\sh3proxy.ini") == 1);
         bool disableDOF = (GetPrivateProfileInt("Video", "DisableDOF", 0, ".\\sh3proxy.ini") == 1);
+        bool disableCutscenesBorder = (GetPrivateProfileInt("Video", "DisableCutscenesBorder", 1, ".\\sh3proxy.ini") == 1);
 
         int cnt = 0;
         __asm__ ("popcnt %1, %0;"
@@ -140,6 +141,9 @@ static void init(HANDLE hModule) {
 
         if (disableDOF)
             patchEnableDOF();
+
+        if (disableCutscenesBorder)
+            patchCutscenesBorder();
 
         if (!patchVideoInit())
             fprintf(stderr, "sh3proxy: video patching failed\n");

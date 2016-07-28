@@ -78,6 +78,17 @@ bool patchEnableDOF() {
     return ret;
 }
 
+bool patchCutscenesBorder() {
+    bool ret = true;
+
+    uint8_t patch[] = {0xd9, 0xee, /* fldz */
+                       0x90, 0x90, 0x90, 0x90};
+
+    ret = patchText((void*)0x41bb4b, patch, NULL, sizeof(patch));
+
+    return ret;
+}
+
 __attribute__((fastcall))
 void printMat16(float* mat) {
     fprintf(stderr, "mat16 at 0x%x:\n"
