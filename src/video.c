@@ -22,6 +22,10 @@ int repl_416ba0(int unk0) {
     return 0;
 }
 
+int repl_41b250() {
+    return 2;
+}
+
 int repl_setRefreshRate(int rate) {
     /* Disable refresh rate reset */
     return 0;

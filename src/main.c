@@ -48,7 +48,7 @@ static void init(HANDLE hModule) {
     useCwd = (GetPrivateProfileInt("Patches", "UseCWD", 0, ".\\sh3proxy.ini") == 1);
     disableSM = (GetPrivateProfileInt("Patches", "DisableSM", 0, ".\\sh3proxy.ini") == 1);
     sh2Refs = (GetPrivateProfileInt("Patches", "SH2Refs", 0, ".\\sh3proxy.ini") == 1);
-    bool whiteBorderFix = (GetPrivateProfileInt("Patches", "Win10WhiteBorderFix", 0, ".\\sh3proxy.ini") == 1);
+    bool whiteBorderFix = (GetPrivateProfileInt("Patches", "Win10WhiteBorderFix", 1, ".\\sh3proxy.ini") == 1);
 
     if (useCwd) {
         /* FIXME for windows:
@@ -95,6 +95,7 @@ static void init(HANDLE hModule) {
         fullscreen = (GetPrivateProfileInt("Video", "Fullscreen", 1, ".\\sh3proxy.ini") == 1);
         float fovX = (float)GetPrivateProfileInt("Video", "FovX", 90, ".\\sh3proxy.ini");
         bool correctFog = (GetPrivateProfileInt("Video", "CorrectFog", 1, ".\\sh3proxy.ini") == 1);
+        bool fixJitter = (GetPrivateProfileInt("Video", "FixFramerateJitter", 0, ".\\sh3proxy.ini") == 1);
 
         int cnt = 0;
         __asm__ ("popcnt %1, %0;"
@@ -122,6 +123,9 @@ static void init(HANDLE hModule) {
         replaceFuncAtAddr((void*)0x416b90, repl_setRefreshRate, NULL);
         // replaceFuncAtAddr((void*)0x67bba7, repl_setTransform, NULL);
         replaceFuncAtAddr((void*)0x43beb0, repl_calculateProjMatrix, NULL);
+        
+        if (fixJitter)
+            replaceFuncAtAddr((void*)0x41b250, repl_41b250, NULL);
 
         if (correctFog) {
             float ratio = (float)resX / (float)resY;
