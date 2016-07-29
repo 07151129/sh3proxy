@@ -1,0 +1,3 @@
+This is a lightweight dinput8 shim for Silent Hill 3. It is intended
+to provide compatibility with d3d profilers. It only uses the CWD patch, so
+that the game actually starts.
