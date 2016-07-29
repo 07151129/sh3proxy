@@ -20,6 +20,25 @@ float toRad(float a) {
     return a * M_PI / 180.0f;
 }
 
+static inline
+int clampPow2(int val, int min, int max) {
+    int cnt = 0;
+    __asm__ ("popcnt %1, %0;"
+            : "=r"(cnt)
+            : "r"(val)
+            :);
+
+    if (cnt > 1) /* Must be pow2 */
+        val &= (1 << (8 * sizeof(int) - __builtin_clz(val) - 1));
+
+    /* Clamp */
+    if (val > max)
+        val = max;
+    if (val < min)
+        val = min;
+    return val;
+}
+
 __attribute__((section(".relocated")))
 uint8_t reloc_smWarn[90];
 
@@ -94,26 +113,15 @@ static void init(HANDLE hModule) {
         texRes = GetPrivateProfileInt("Video", "TexRes", 1024, ".\\sh3proxy.ini");
         fullscreen = (GetPrivateProfileInt("Video", "Fullscreen", 1, ".\\sh3proxy.ini") == 1);
         float fovX = (float)GetPrivateProfileInt("Video", "FovX", 90, ".\\sh3proxy.ini");
+        float shadowRes = (float)GetPrivateProfileInt("Video", "ShadowRes", 1024, ".\\sh3proxy.ini");
         bool correctFog = (GetPrivateProfileInt("Video", "CorrectFog", 1, ".\\sh3proxy.ini") == 1);
         bool fixJitter = (GetPrivateProfileInt("Video", "FixFramerateJitter", 0, ".\\sh3proxy.ini") == 1);
         bool disableDOF = (GetPrivateProfileInt("Video", "DisableDOF", 0, ".\\sh3proxy.ini") == 1);
         bool disableCutscenesBorder = (GetPrivateProfileInt("Video", "DisableCutscenesBorder", 1, ".\\sh3proxy.ini") == 1);
 
-        int cnt = 0;
-        __asm__ ("popcnt %1, %0;"
-                : "=r"(cnt)
-                : "r"(texRes)
-                :);
+        texRes = clampPow2(texRes, 256, 4096);
+        shadowRes = (float)clampPow2(shadowRes, 256, 4096);
 
-        if (cnt > 1) /* Must be pow2 */
-            texRes &= (1 << (8 * sizeof(int) - __builtin_clz(texRes) - 1));
-
-        /* Clamp */
-        if (texRes > 4096)
-            texRes = 4096;
-        if (texRes < 256)
-            texRes = 256;
-        
         projH = sqrt(1.0f / (1.54f * tan(toRad(fovX) / 2.0f)));
         // fprintf(stderr, "projH: %f\n", projH);
 
@@ -144,6 +152,8 @@ static void init(HANDLE hModule) {
 
         if (disableCutscenesBorder)
             patchCutscenesBorder();
+
+        patchShadows((float)shadowRes);
 
         if (!patchVideoInit())
             fprintf(stderr, "sh3proxy: video patching failed\n");
@@ -214,7 +224,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD reason, LPVOID lpReserved) {
     #ifdef WRAP_DINPUT
         static HRESULT ret;
         if (!ret)
-        ret = ((HRESULT (*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))origAddr)(hinst, dwVersion, riidltf, ppvOut, punkOuter);
+            ret = ((HRESULT (*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))origAddr)(hinst, dwVersion, riidltf, ppvOut, punkOuter);
     #else
         static void* ret;
         if (!ret)

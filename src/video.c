@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdbool.h>
+#include <windows.h>
 
 #include "patch.h"
 #include "video.h"
@@ -54,8 +55,9 @@ bool patchVideoInit() {
     ret = patchText((void*)0x5f0993, patchRes, NULL, sizeof(patchRes));
 
     /* FIXME: dimensions can be different */
-    uint8_t patchTex[] = {0xB8, (texRes & 0xff), (texRes & 0xff00) >> 0x8, (texRes & 0xff0000) >> 0x10, (texRes & 0xff000000) >> 0x18 /* mov texRes, %eax */};
-    ret = patchText((void*)0x5f0984, patchTex, NULL, sizeof(patchTex));
+    /* FIXME: Does this actually do anything? */
+    // uint8_t patchTex[] = {0xB8, (texRes & 0xff), (texRes & 0xff00) >> 0x8, (texRes & 0xff0000) >> 0x10, (texRes & 0xff000000) >> 0x18 /* mov texRes, %eax */};
+    // ret = patchText((void*)0x5f0984, patchTex, NULL, sizeof(patchTex));
 
     uint8_t patchFs[] = {0xC6, 0x05, 0xFC, 0xC5, 0xBC, 0x0, fullscreen & 0xff, /* mov fullscreen, %ds:0xbcc5fc */};
     ret = patchText((void*)0x5f09bb, patchFs, NULL, sizeof(patchFs));
@@ -85,6 +87,28 @@ bool patchCutscenesBorder() {
                        0x90, 0x90, 0x90, 0x90};
 
     ret = patchText((void*)0x41bb4b, patch, NULL, sizeof(patch));
+
+    return ret;
+}
+
+bool patchShadows(float res) {
+    bool ret = true;
+
+    int ires = (int)res;
+    uint8_t patch[] = {0x68, (ires & 0xff), (ires & 0xff00) >> 0x8, (ires & 0xff0000) >> 0x10, (ires & 0xff000000) >> 0x18 /* push res */};
+
+    ret = patchText((void*)0x48b1b5, patch, NULL, sizeof(patch));
+    ret = patchText((void*)0x48b1ba, patch, NULL, sizeof(patch));
+
+    DWORD old_prot = 0;
+    size_t sz = 0x48d8d1 - 0x48d88b + 1;
+    VirtualProtect((void*)0x48d88b, sz, PAGE_READWRITE, &old_prot);
+
+    uintptr_t toPatch[] = {0x48D891, 0x48D89B, 0x48D8A5, 0x48D8AF, 0x48D8B9, 0x48D8C3, 0x48D8CD, 0x48D8D7};
+    for (size_t i = 0; i < sizeof(toPatch) / sizeof(*toPatch); i++)
+        *(float*)toPatch[i] = res;
+
+    VirtualProtect((void*)0x48d88b, sz, old_prot, NULL);
 
     return ret;
 }
