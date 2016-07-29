@@ -131,8 +131,9 @@ static void init(HANDLE hModule) {
         replaceFuncAtAddr((void*)0x416ae0, repl_setSizeXY, NULL);
         replaceFuncAtAddr((void*)0x416ba0, repl_416ba0, NULL);
         replaceFuncAtAddr((void*)0x416b90, repl_setRefreshRate, NULL);
+        patchFOV(projH);
         // replaceFuncAtAddr((void*)0x67bba7, repl_setTransform, NULL);
-        replaceFuncAtAddr((void*)0x43beb0, repl_calculateProjMatrix, NULL);
+        // replaceFuncAtAddr((void*)0x43beb0, repl_calculateProjMatrix, NULL);
 
         if (fixJitter)
             replaceFuncAtAddr((void*)0x41b250, repl_41b250, NULL);

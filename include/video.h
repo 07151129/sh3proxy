@@ -4,6 +4,7 @@
 int repl_getSizeX();
 int repl_getSizeY();
 bool patchVideoInit();
+bool patchFOV(float projH);
 bool patchEnableDOF();
 bool patchCutscenesBorder();
 bool patchShadows(float res);

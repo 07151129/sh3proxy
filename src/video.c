@@ -68,6 +68,22 @@ bool patchVideoInit() {
     return ret;
 }
 
+bool patchFOV(float projH) {
+    bool ret = true;
+
+    DWORD old_prot = 0;
+    size_t sz = 0x43b649 - 0x43b63f+ 1;
+    VirtualProtect((void*)0x43b63f, sz, PAGE_READWRITE, &old_prot);
+    *(float*)0x43b645 = projH; /* initial value */
+    VirtualProtect((void*)0x43b63f, sz, old_prot, NULL);
+
+    VirtualProtect((void*)0x68f064, sizeof(float), PAGE_READWRITE, &old_prot);
+    *(float*)0x68f064 = projH; /* zoom out threshold */
+    VirtualProtect((void*)0x68f064, sizeof(float), old_prot, NULL);
+
+    return ret;
+}
+
 bool patchEnableDOF() {
     bool ret = true;
 
