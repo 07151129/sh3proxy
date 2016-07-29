@@ -16,7 +16,12 @@ SRC_ASM := \
 	src/export.S \
 	src/fov.S
 
-TARGET := build/d3d8.dll
+ifeq ($(WRAP_DINPUT), 1)
+	DEF += "-DWRAP_DINPUT"
+	TARGET := build/dinput8.dll
+else
+	TARGET := build/d3d8.dll
+endif
 
 OBJ := $(SRC:src/%.c=build/%.o)
 OBJ += $(SRC_ASM:src/%.S=build/%.o)

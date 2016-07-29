@@ -168,15 +168,27 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD reason, LPVOID lpReserved) {
     return TRUE;
 }
 
-void* WINAPI
-d3d_create(long SDKVersion) {
+#ifdef WRAP_DINPUT
+    HRESULT WINAPI
+    DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter) {
+#else
+    void* WINAPI
+    d3d_create(long SDKVersion) {
+#endif
     // fprintf(stderr, "Direct3DCreate8\n");
     static HINSTANCE origDLL;
     if (!origDLL) {
         char path[1024];
         GetSystemDirectoryA(path, sizeof(path));
-        char* fullPath = calloc(strlen(path) + strlen("\\d3d8.dll") + 1, sizeof(char));
-        snprintf(fullPath, strlen(path) + strlen("\\d3d8.dll") + 1, "%s\\d3d8.dll", path);
+        char name[] = 
+        #ifdef WRAP_DINPUT
+            "dinput8.dll";
+        #else
+            "d3d8.dll";
+        #endif
+
+        char* fullPath = calloc(strlen(path) + strlen(name) + 1, sizeof(char));
+        snprintf(fullPath, strlen(path) + strlen(name) + 1, "%s\\%s", path, name);
 
         origDLL = LoadLibrary(fullPath);
         if (!origDLL)
@@ -185,16 +197,29 @@ d3d_create(long SDKVersion) {
 
     static void* origAddr;
     if (!origAddr) {
-        origAddr = GetProcAddress(origDLL, "Direct3DCreate8");
+        char func[] =
+        #ifdef WRAP_DINPUT
+            "DirectInput8Create";
+        #else
+            "Direct3DCreate8";
+        #endif
+
+        origAddr = GetProcAddress(origDLL, func);
         if (!origAddr) {
-            fprintf(stderr, "sh3proxy: failed to obtain original Direct3DCreate8, exiting\n");
+            fprintf(stderr, "sh3proxy: failed to obtain original %s, exiting\n", func);
             ExitProcess(1);
         }
     }
 
-    static void* ret;
-    if (!ret)
-        ret = ((void* (*)(UINT))origAddr)(SDKVersion);
+    #ifdef WRAP_DINPUT
+        static HRESULT ret;
+        if (!ret)
+        ret = ((HRESULT (*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))origAddr)(hinst, dwVersion, riidltf, ppvOut, punkOuter);
+    #else
+        static void* ret;
+        if (!ret)
+            ret = ((void* (*)(UINT))origAddr)(SDKVersion);
+    #endif
 
     return ret;
 }
