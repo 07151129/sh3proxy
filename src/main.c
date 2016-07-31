@@ -120,7 +120,7 @@ static void init(HANDLE hModule) {
         bool disableCutscenesBorder = (GetPrivateProfileInt("Video", "DisableCutscenesBorder", 1, ".\\sh3proxy.ini") == 1);
 
         texRes = clampPow2(texRes, 256, 4096);
-        shadowRes = (float)clampPow2(shadowRes, 256, 4096);
+        shadowRes = (float)clampPow2(shadowRes, 128, 4096);
 
         projH = sqrt(1.0f / (1.54f * tan(toRad(fovX) / 2.0f)));
         // fprintf(stderr, "projH: %f\n", projH);

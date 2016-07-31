@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /* Replace first instruction of code at src with jump to repl */
-bool replaceFuncAtAddr(void* src, void* repl, uint8_t bak[static 10]);
+bool replaceFuncAtAddr(void* src, void* repl, uint8_t bak[static 6]);
 
 /* Replace data in .text. Back up is written to bak and should be at least as
  * large as replSz

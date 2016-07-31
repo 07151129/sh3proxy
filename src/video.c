@@ -116,15 +116,41 @@ bool patchShadows(float res) {
     ret = patchText((void*)0x48b1b5, patch, NULL, sizeof(patch));
     ret = patchText((void*)0x48b1ba, patch, NULL, sizeof(patch));
 
-    DWORD old_prot = 0;
-    size_t sz = 0x48d8d1 - 0x48d88b + 1;
-    VirtualProtect((void*)0x48d88b, sz, PAGE_READWRITE, &old_prot);
+    {
+        DWORD old_prot = 0;
+        size_t sz = 0x48d8d1 - 0x48d88b + 1;
+        VirtualProtect((void*)0x48d88b, sz, PAGE_READWRITE, &old_prot);
 
-    uintptr_t toPatch[] = {0x48D891, 0x48D89B, 0x48D8A5, 0x48D8AF, 0x48D8B9, 0x48D8C3, 0x48D8CD, 0x48D8D7};
-    for (size_t i = 0; i < sizeof(toPatch) / sizeof(*toPatch); i++)
-        *(float*)toPatch[i] = res;
+        uintptr_t toPatch[] = {0x48D891, 0x48D89B, 0x48D8A5, 0x48D8AF, 0x48D8B9, 0x48D8C3, 0x48D8CD, 0x48D8D7};
+        for (size_t i = 0; i < sizeof(toPatch) / sizeof(*toPatch); i++)
+            *(float*)toPatch[i] = res;
 
-    VirtualProtect((void*)0x48d88b, sz, old_prot, NULL);
+        VirtualProtect((void*)0x48d88b, sz, old_prot, NULL);
+    }
+
+    {
+        DWORD old_prot = 0;
+        size_t sz = 0x48db98 - 0x48d661 + 1;
+        VirtualProtect((void*)0x48d661, sz, PAGE_READWRITE, &old_prot);
+
+        uintptr_t toPatch[] = {0x48D661, 0x48D696, 0x48D6D7, 0x48D6EE, 0x48DB4E, 0x48DB58, 0x48DB62, 0x48DB6C, 0x48DB76, 0x48DB80, 0x48DB8A, 0x48DB94};
+        for (size_t i = 0; i < sizeof(toPatch) / sizeof(*toPatch); i++)
+            *(float*)toPatch[i] = res;
+
+        VirtualProtect((void*)0x48d661, sz, old_prot, NULL);
+    }
+
+    {
+        DWORD old_prot = 0;
+        size_t sz = 0x48b544 - 0x427235 + 1;
+        VirtualProtect((void*)0x427235, sz, PAGE_READWRITE, &old_prot);
+
+        uintptr_t toPatch[] = {0x427235, 0x42723A, 0x48B29A, 0x48B29F, 0x48B53B, 0x48B540};
+        for (size_t i = 0; i < sizeof(toPatch) / sizeof(*toPatch); i++)
+            *(int*)toPatch[i] = ires;
+
+        VirtualProtect((void*)0x427235, sz, old_prot, NULL);
+    }
 
     return ret;
 }
