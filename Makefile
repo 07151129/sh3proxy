@@ -13,7 +13,6 @@ SRC := \
 	src/video.c
 
 SRC_ASM := \
-	src/export.S \
 	src/fov.S
 
 ifeq ($(WRAP_DINPUT), 1)

@@ -180,23 +180,29 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD reason, LPVOID lpReserved) {
 }
 
 #ifdef WRAP_DINPUT
-    HRESULT WINAPI
-    DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter) {
+    #define WRAP_FN_RET_T HRESULT
+    #define WRAP_FN_IFACE WRAP_FN_RET_T WINAPI DirectInput8Create(HINSTANCE hinst, DWORD dwVersion, REFIID riidltf, LPVOID* ppvOut, LPUNKNOWN punkOuter)
+    #define WRAP_FN_T WRAP_FN_RET_T(*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN)
+    #define WRAP_FN_ARGS hinst, dwVersion, riidltf, ppvOut, punkOuter
+    #define WRAP_FN_EXP "DirectInput8Create"
+    #define WRAP_DLL_NAME "dinput8"
 #else
-    void* WINAPI
-    d3d_create(long SDKVersion) {
+    #define WRAP_FN_RET_T void*
+    #define WRAP_FN_IFACE WRAP_FN_RET_T WINAPI d3d_create(long SDKVersion)
+    #define WRAP_FN_T WRAP_FN_RET_T(*)(DWORD)
+    #define WRAP_FN_ARGS SDKVersion
+    #define WRAP_FN_EXP "Direct3DCreate8"
+    #define WRAP_DLL_NAME "d3d8"
 #endif
-    // fprintf(stderr, "Direct3DCreate8\n");
+
+WRAP_FN_IFACE __asm__ ("_"WRAP_FN_EXP);
+
+WRAP_FN_IFACE {
     static HINSTANCE origDLL;
     if (!origDLL) {
         char path[1024];
         GetSystemDirectoryA(path, sizeof(path));
-        char name[] = 
-        #ifdef WRAP_DINPUT
-            "dinput8.dll";
-        #else
-            "d3d8.dll";
-        #endif
+        char name[] = WRAP_DLL_NAME".dll";
 
         char* fullPath = calloc(strlen(path) + strlen(name) + 1, sizeof(char));
         snprintf(fullPath, strlen(path) + strlen(name) + 1, "%s\\%s", path, name);
@@ -208,12 +214,7 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD reason, LPVOID lpReserved) {
 
     static void* origAddr;
     if (!origAddr) {
-        char func[] =
-        #ifdef WRAP_DINPUT
-            "DirectInput8Create";
-        #else
-            "Direct3DCreate8";
-        #endif
+        char func[] = WRAP_FN_EXP;
 
         origAddr = GetProcAddress(origDLL, func);
         if (!origAddr) {
@@ -222,15 +223,9 @@ BOOL APIENTRY DllMain(HANDLE hModule, DWORD reason, LPVOID lpReserved) {
         }
     }
 
-    #ifdef WRAP_DINPUT
-        static HRESULT ret;
-        if (!ret)
-            ret = ((HRESULT (*)(HINSTANCE, DWORD, REFIID, LPVOID*, LPUNKNOWN))origAddr)(hinst, dwVersion, riidltf, ppvOut, punkOuter);
-    #else
-        static void* ret;
-        if (!ret)
-            ret = ((void* (*)(UINT))origAddr)(SDKVersion);
-    #endif
+    static WRAP_FN_RET_T ret;
+    if (!ret)
+        ret = ((WRAP_FN_T)origAddr)(WRAP_FN_ARGS);
 
     return ret;
 }
