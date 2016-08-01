@@ -33,16 +33,15 @@ int repl_setRefreshRate(int rate) {
 }
 
 int repl_setSizeXY(int x, int y) {
-    /* d3d8 device will be reset, so make sure
-     * the mode is correct
-     */
-    if (x == resX && y == resY) {
-        *(int*)0x72c780 = x; /* gSizeX */
-        *(int*)0x72c784 = y; /* gSizeY */
-        *(int*)0x72c788 = x; /* gWndResX */
-        *(int*)0x72c78c = y; /* gWndResY */
+    /* Always override mode setting */
+    // if (x == resX && y == resY) {
+        *(int*)0x72c780 = resX; /* gSizeX */
+        *(int*)0x72c784 = resY; /* gSizeY */
+        *(int*)0x72c788 = resX; /* gWndResX */
+        *(int*)0x72c78c = resY; /* gWndResY */
         *(uint8_t*)0x72c655 = 1;
-    }
+        *(uint8_t*)0xbcc5fc = fullscreen; /* gFullscreen */
+    // }
     return 0;
 }
 
