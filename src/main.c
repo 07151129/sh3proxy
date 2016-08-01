@@ -115,7 +115,6 @@ static void init(HANDLE hModule) {
         float fovX = (float)GetPrivateProfileInt("Video", "FovX", 90, ".\\sh3proxy.ini");
         float shadowRes = (float)GetPrivateProfileInt("Video", "ShadowRes", 1024, ".\\sh3proxy.ini");
         bool correctFog = (GetPrivateProfileInt("Video", "CorrectFog", 1, ".\\sh3proxy.ini") == 1);
-        bool fixJitter = (GetPrivateProfileInt("Video", "FixFramerateJitter", 0, ".\\sh3proxy.ini") == 1);
         bool disableDOF = (GetPrivateProfileInt("Video", "DisableDOF", 0, ".\\sh3proxy.ini") == 1);
         bool disableCutscenesBorder = (GetPrivateProfileInt("Video", "DisableCutscenesBorder", 1, ".\\sh3proxy.ini") == 1);
 
@@ -134,9 +133,16 @@ static void init(HANDLE hModule) {
         patchFOV(projH);
         // replaceFuncAtAddr((void*)0x67bba7, repl_setTransform, NULL);
         // replaceFuncAtAddr((void*)0x43beb0, repl_calculateProjMatrix, NULL);
+        
+        {
+            bool CapFPS = (GetPrivateProfileInt("FixJitter", "CapFPS", 0, ".\\sh3proxy.ini") == 1);
+            bool AltFix = (GetPrivateProfileInt("FixJitter", "AltFix", 0, ".\\sh3proxy.ini") == 1);
 
-        if (fixJitter)
-            replaceFuncAtAddr((void*)0x41b250, repl_41b250, NULL);
+            if (CapFPS)
+                replaceFuncAtAddr((void*)0x41b250, repl_41b250_2, NULL);
+            else if (AltFix)
+                replaceFuncAtAddr((void*)0x41b250, repl_41b250_1, NULL);
+        }
 
         if (correctFog) {
             float ratio = (float)resX / (float)resY;
