@@ -162,6 +162,8 @@ static void init(HANDLE hModule) {
 
         patchShadows((float)shadowRes);
 
+        // patchTexInit();
+
         if (!patchVideoInit())
             fprintf(stderr, "sh3proxy: video patching failed\n");
     }

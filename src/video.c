@@ -72,6 +72,21 @@ bool patchVideoInit() {
     return ret;
 }
 
+void repl_texInit();
+
+bool patchTexInit() {
+    bool ret = true;
+
+    // uint8_t patchTexInit[] = {0x6a, 0x0, /* push 0 */};
+    // ret = patchText((void*)0x461dbb, patchTexInit, NULL, sizeof(patchTexInit));
+    
+    /* FIXME: This patches tex init to use D3DPOOL_DEFAULT,
+     * but usage of pool doesn't seem to be the bottleneck in first place*/
+    replaceFuncAtAddr((void*)0x461dbd, repl_texInit, NULL);
+
+    return ret;
+}
+
 bool patchFOV(float projH) {
     bool ret = true;
 

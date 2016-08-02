@@ -1,27 +1,15 @@
-.globl _repl_createDevice, _repl_updateVideoSettings
+.globl _repl_texInit
 .text
 
-_repl_createDevice:
-    movl %edx, %ds:(0x72c664 + 0x4); /* gD3dPresentParameters->BackBufferHeight */
+_repl_texInit:
+    add $4, %esp;
+    lea 0x15(,%eax,4), %eax;
+    cmp $512, %edi;
+    jne .L_texInit_ne512;
+    push $0
+    jmp *(ret_texInit);
+    .L_texInit_ne512:
+    push $1;
+    jmp *(ret_texInit);
 
-    push %eax;
-    movl _refreshRate, %eax;
-    movl %eax, %ds:(0x72c664 + 0x30); /* gD3dPresentParameters->FullScreen_RefreshRateInHz */
-
-    xorl %eax, %eax;
-    movb _fullscreen, %al;
-    xorb $1, %al;
-    movl %eax, %ds:(0x72c664 + 0x20); /* gD3dPresentParameters->Windowed */
-
-    pop %eax;
-
-    jmpl *(ret_createDevice);
-
-_repl_updateVideoSettings:
-    movl _refreshRate, %esi;
-    movl %esi, %ds:(0x72c664 + 0x30); /* gD3dPresentParameters->FullScreen_RefreshRateInHz */
-
-    jmpl *(ret_updateVideoSettings)
-
-ret_createDevice: .long 0x419628;
-ret_updateVideoSettings: .long 0x418e05;
+ret_texInit: .long 0x461dc4

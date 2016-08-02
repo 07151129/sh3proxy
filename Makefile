@@ -13,7 +13,8 @@ SRC := \
 	src/video.c
 
 SRC_ASM := \
-	src/fov.S
+	src/fov.S \
+	src/video_init.S
 
 ifeq ($(WRAP_DINPUT), 1)
 	DEF += "-DWRAP_DINPUT"
