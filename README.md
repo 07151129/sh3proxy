@@ -8,6 +8,10 @@ sh3proxy is a d3d8 wrapper for Silent Hill 3. Similarly to https://github.com/em
 * The engine no longer relies on resource paths in Windows registry
 * Silent Hill 2 references can be unlocked without having to complete the game
 * Safe mode warnings are disabled
+* Fixes white border around game window on Windows
+* Disabling Depth of Field effect
+* Disabling black borders during cutscenes
+* Setting arbitrary shadow resolution
 
 Installation
 -------
@@ -20,6 +24,11 @@ Building
 -------
 
 Set path to mingw in `config.mk`. Run `make`.
+
+sh3proxy can also be built to wrap dinput8 instead of d3d8:
+````bash
+WRAP_DINPUT=1 make # -B if your previous target was different
+````
 
 Caveats
 -------
