@@ -50,6 +50,7 @@ int repl_smWarn(int arg) {
 
 void repl_setTransform();
 void repl_calculateProjMatrix();
+void repl_setWindowStyle();
 
 static void init(HANDLE hModule) {
     fprintf(stderr, "sh3proxy: init\n");
@@ -68,6 +69,7 @@ static void init(HANDLE hModule) {
     disableSM = (GetPrivateProfileInt("Patches", "DisableSM", 0, ".\\sh3proxy.ini") == 1);
     sh2Refs = (GetPrivateProfileInt("Patches", "SH2Refs", 0, ".\\sh3proxy.ini") == 1);
     bool whiteBorderFix = (GetPrivateProfileInt("Patches", "Win10WhiteBorderFix", 1, ".\\sh3proxy.ini") == 1);
+    bool borderless = (GetPrivateProfileInt("Patches", "Borderless", 1, ".\\sh3proxy.ini") == 1);
 
     if (useCwd) {
         /* FIXME for windows:
@@ -102,9 +104,11 @@ static void init(HANDLE hModule) {
     if (sh2Refs)
         replaceFuncAtAddr((void*)0x5e9760, repl_updateSH2InstallDir, NULL);
     if (whiteBorderFix) {
-        uint8_t patch[] = {0x68, 0x0, 0x0, 0x0, 0x0, /* push WS_EX_LEFT */};
-        patchText((void*)0x403042, patch, NULL, sizeof(patch));
+        uint8_t patchExStyle[] = {0x68, 0x0, 0x0, 0x0, 0x00, /* push WS_EX_LEFT */};
+        patchText((void*)0x403042, patchExStyle, NULL, sizeof(patchExStyle));
     }
+    if (borderless)
+        replaceFuncAtAddr((void*)0x403032, repl_setWindowStyle, NULL);
 
     bool patchVideo = (GetPrivateProfileInt("Video", "Enable", 0, ".\\sh3proxy.ini") == 1);
     if (patchVideo) {

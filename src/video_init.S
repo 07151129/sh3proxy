@@ -1,4 +1,4 @@
-.globl _repl_texInit
+.globl _repl_texInit, _repl_setWindowStyle
 .text
 
 _repl_texInit:
@@ -12,4 +12,10 @@ _repl_texInit:
     push $1;
     jmp *(ret_texInit);
 
+_repl_setWindowStyle:
+    pushl $0x80000000; /* X */
+    pushl $0x80000000; /* dwStyle = WS_POPUP */
+    jmp *(ret_setWindowStyle);
+
 ret_texInit: .long 0x461dc4
+ret_setWindowStyle: .long 0x403038
