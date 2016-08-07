@@ -69,7 +69,7 @@ static void init(HANDLE hModule) {
     disableSM = (GetPrivateProfileInt("Patches", "DisableSM", 0, ".\\sh3proxy.ini") == 1);
     sh2Refs = (GetPrivateProfileInt("Patches", "SH2Refs", 0, ".\\sh3proxy.ini") == 1);
     bool whiteBorderFix = (GetPrivateProfileInt("Patches", "Win10WhiteBorderFix", 1, ".\\sh3proxy.ini") == 1);
-    bool borderless = (GetPrivateProfileInt("Patches", "Borderless", 1, ".\\sh3proxy.ini") == 1);
+    bool borderless = (GetPrivateProfileInt("Patches", "Borderless", 0, ".\\sh3proxy.ini") == 1);
 
     if (useCwd) {
         /* FIXME for windows:
@@ -109,6 +109,11 @@ static void init(HANDLE hModule) {
     }
     if (borderless)
         replaceFuncAtAddr((void*)0x403032, repl_setWindowStyle, NULL);
+
+    { /* Don't re-create disp.ini */
+        uint8_t patch[] = {0x90, 0x90, 0x90, 0x90, 0x90};
+        patchText((void*)0x5f0a53, patch, NULL, sizeof(patch));
+    }
 
     bool patchVideo = (GetPrivateProfileInt("Video", "Enable", 0, ".\\sh3proxy.ini") == 1);
     if (patchVideo) {
