@@ -164,7 +164,7 @@ bool patchShadows(float res) {
         size_t sz = 0x48b544 - 0x427235 + 1;
         VirtualProtect((void*)0x427235, sz, PAGE_READWRITE, &old_prot);
 
-        uintptr_t toPatch[] = {0x427235, 0x42723A, 0x48B29A, 0x48B29F, 0x48B53B, 0x48B540};
+        uintptr_t toPatch[] = {0x48B29A, 0x48B29F, 0x48B53B, 0x48B540};
         for (size_t i = 0; i < sizeof(toPatch) / sizeof(*toPatch); i++)
             *(int*)toPatch[i] = ires;
 
