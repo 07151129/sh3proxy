@@ -124,6 +124,7 @@ static void init(HANDLE hModule) {
         float fovX = (float)GetPrivateProfileInt("Video", "FovX", 90, ".\\sh3proxy.ini");
         float shadowRes = (float)GetPrivateProfileInt("Video", "ShadowRes", 1024, ".\\sh3proxy.ini");
         bool correctFog = (GetPrivateProfileInt("Video", "CorrectFog", 1, ".\\sh3proxy.ini") == 1);
+        int DOFRes = GetPrivateProfileInt("Video", "DOFRes", 512, ".\\sh3proxy.ini");
         bool disableDOF = (GetPrivateProfileInt("Video", "DisableDOF", 0, ".\\sh3proxy.ini") == 1);
         bool disableCutscenesBorder = (GetPrivateProfileInt("Video", "DisableCutscenesBorder", 1, ".\\sh3proxy.ini") == 1);
 
@@ -163,8 +164,10 @@ static void init(HANDLE hModule) {
             VirtualProtect((void*)0x690634, 2 * sizeof(float), old_prot, NULL);
         }
 
-        if (disableDOF)
-            patchEnableDOF();
+        if (!disableDOF)
+            patchDOFResolution(clampPow2(DOFRes, 256, 4096));
+        else
+            patchDisableDOF();
 
         if (disableCutscenesBorder)
             patchCutscenesBorder();

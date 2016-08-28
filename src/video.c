@@ -103,16 +103,22 @@ bool patchFOV(float projH) {
     return ret;
 }
 
-bool patchEnableDOF() {
+bool patchDOFResolution(int32_t res) {
     bool ret = true;
 
-    uint8_t patch[] = {0x90, 0x90, 0x90, 0x90, 0x90};
-    ret = patchText((void*)0x41b9d4, patch, NULL, sizeof(patch));
-    ret = patchText((void*)0x41ba7c, patch, NULL, sizeof(patch));
-
-    *(uint8_t*)0x72c866 = 0; /* gEnableDOF */
+    int32_t texRes[] = {0x40, 0x200, res, res};
+    memcpy((void*)0x6b1434, texRes, sizeof(texRes));
+    memcpy((void*)0x6b1444, texRes, sizeof(texRes));
 
     return ret;
+}
+
+static uint8_t repl_41b9d0(uint8_t type) {
+    return type;
+}
+
+bool patchDisableDOF() {
+    replaceFuncAtAddr((void*)0x41b9d0, repl_41b9d0, NULL);
 }
 
 bool patchCutscenesBorder() {
