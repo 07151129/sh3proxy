@@ -115,6 +115,16 @@ static void init(HANDLE hModule) {
         patchText((void*)0x5f0a53, patch, NULL, sizeof(patch));
     }
 
+    {
+        bool CapFPS = (GetPrivateProfileInt("FixJitter", "CapFPS", 0, ".\\sh3proxy.ini") == 1);
+        bool AltFix = (GetPrivateProfileInt("FixJitter", "AltFix", 0, ".\\sh3proxy.ini") == 1);
+
+        if (CapFPS)
+            replaceFuncAtAddr((void*)0x41b250, repl_41b250_2, NULL);
+        else if (AltFix)
+            replaceFuncAtAddr((void*)0x41b250, repl_41b250_1, NULL);
+    }
+
     bool patchVideo = (GetPrivateProfileInt("Video", "Enable", 0, ".\\sh3proxy.ini") == 1);
     if (patchVideo) {
         resX = GetPrivateProfileInt("Video", "SizeX", 1280, ".\\sh3proxy.ini");
@@ -144,16 +154,6 @@ static void init(HANDLE hModule) {
         // replaceFuncAtAddr((void*)0x67bba7, repl_setTransform, NULL);
         // replaceFuncAtAddr((void*)0x43beb0, repl_calculateProjMatrix, NULL);
         
-        {
-            bool CapFPS = (GetPrivateProfileInt("FixJitter", "CapFPS", 0, ".\\sh3proxy.ini") == 1);
-            bool AltFix = (GetPrivateProfileInt("FixJitter", "AltFix", 0, ".\\sh3proxy.ini") == 1);
-
-            if (CapFPS)
-                replaceFuncAtAddr((void*)0x41b250, repl_41b250_2, NULL);
-            else if (AltFix)
-                replaceFuncAtAddr((void*)0x41b250, repl_41b250_1, NULL);
-        }
-
         if (correctFog) {
             float ratio = (float)resX / (float)resY;
 
