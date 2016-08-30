@@ -48,6 +48,13 @@ int repl_smWarn(int arg) {
     return ((int (*)(int))(void*)reloc_smWarn)(arg);
 }
 
+void debugLog(const char* fmt, ...) {
+    va_list args;
+    va_start(args, fmt);
+    vfprintf(stderr, fmt, args);
+    va_end(args);
+}
+
 void repl_setTransform();
 void repl_calculateProjMatrix();
 void repl_setWindowStyle();
@@ -70,6 +77,7 @@ static void init(HANDLE hModule) {
     sh2Refs = (GetPrivateProfileInt("Patches", "SH2Refs", 0, ".\\sh3proxy.ini") == 1);
     bool whiteBorderFix = (GetPrivateProfileInt("Patches", "Win10WhiteBorderFix", 1, ".\\sh3proxy.ini") == 1);
     bool borderless = (GetPrivateProfileInt("Patches", "Borderless", 0, ".\\sh3proxy.ini") == 1);
+    bool debugLogging = (GetPrivateProfileInt("Patches", "DebugLog", 0, ".\\sh3proxy.ini") == 1);
 
     if (useCwd) {
         /* FIXME for windows:
@@ -109,6 +117,8 @@ static void init(HANDLE hModule) {
     }
     if (borderless)
         replaceFuncAtAddr((void*)0x403032, repl_setWindowStyle, NULL);
+    if (debugLogging)
+        replaceFuncAtAddr((void*)0x41b6a0, debugLog, NULL);
 
     { /* Don't re-create disp.ini */
         uint8_t patch[] = {0x90, 0x90, 0x90, 0x90, 0x90};
