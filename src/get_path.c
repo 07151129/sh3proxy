@@ -4,7 +4,10 @@
 #include <windows.h>
 #include <direct.h>
 
+#include <sys/stat.h>
+
 #include "get_path.h"
+#include "prefs.h"
 
 int repl_updateSH2InstallDir() {
     *(uint8_t*)0xbcc250 = 1; /* gRegHasSH2 */
@@ -37,11 +40,18 @@ char* repl_getAbsPathImpl(enum resource_t type, const char* relPath) {
         snprintf(ret, len, "%s\\%s", cwd, relPath);
     }
     else {
-        len = strlen(cwd) + strlen("\\savedata\\") + strlen(relPath) + 1;
+        len = strlen("\\savedata\\") + strlen(relPath) + 1;
+        bool override = (strlen(savepathOverride) > 0);
+        
+        if (override)
+            len += strlen(savepathOverride);
+        else
+            len += strlen(cwd);
+
         ret = target_malloc(len);
-        snprintf(ret, len, "%s\\savedata\\%s", cwd, relPath);
+        snprintf(ret, len, "%s\\savedata\\%s", override ? savepathOverride : cwd, relPath);
         static char* savePath;
-        if (!savePath) {
+        if (!savePath) { /* The first path is always a directory */
             savePath = strdup(ret);
             *(char**)0xbcc614 = savePath;
             uint16_t unk[9]; /* File time as time_t, we discard this */

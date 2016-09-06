@@ -10,6 +10,7 @@
 #include "video.h"
 
 bool useCwd, disableSM, sh2Refs;
+char savepathOverride[1024];
 int resX, resY, texRes;
 bool fullscreen;
 
@@ -75,6 +76,7 @@ static void init(HANDLE hModule) {
     useCwd = (GetPrivateProfileInt("Patches", "UseCWD", 0, ".\\sh3proxy.ini") == 1);
     disableSM = (GetPrivateProfileInt("Patches", "DisableSM", 0, ".\\sh3proxy.ini") == 1);
     sh2Refs = (GetPrivateProfileInt("Patches", "SH2Refs", 0, ".\\sh3proxy.ini") == 1);
+    GetPrivateProfileString("Patches", "SavepathOverride", NULL, savepathOverride, sizeof(savepathOverride), ".\\sh3proxy.ini");
     bool whiteBorderFix = (GetPrivateProfileInt("Patches", "Win10WhiteBorderFix", 1, ".\\sh3proxy.ini") == 1);
     bool borderless = (GetPrivateProfileInt("Patches", "Borderless", 0, ".\\sh3proxy.ini") == 1);
     bool debugLogging = (GetPrivateProfileInt("Patches", "DebugLog", 0, ".\\sh3proxy.ini") == 1);

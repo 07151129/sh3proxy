@@ -6,10 +6,14 @@ sh3proxy is a d3d8 wrapper for Silent Hill 3. Similarly to https://github.com/em
 * Setting arbitrary video mode without conflict with the game's settings
 * Setting arbitrary horizontal FOV (field-of-view) angle
 * The engine no longer relies on resource paths in Windows registry
+* The engine no longer re-creates savedata/disp.ini
+* Savedata path can be overriden
 * Silent Hill 2 references can be unlocked without having to complete the game
 * Safe mode warnings are disabled
 * Fixes white border around game window on Windows
+* Using borderless window mode
 * Disabling Depth of Field effect
+* Setting custom Depth of Field effect resolution
 * Disabling black borders during cutscenes
 * Setting arbitrary shadow resolution
 

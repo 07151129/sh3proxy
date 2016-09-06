@@ -58,11 +58,6 @@ bool patchVideoInit() {
         0xC7, 0x05, 0xEC, 0xC5, 0xBC, 0x00, (resY & 0xff), (resY & 0xff00) >> 0x8, (resY & 0xff0000) >> 0x10, (resY & 0xff000000) >> 0x18 /* mov resY, %ds:0xbcc5ec */};
     ret = patchText((void*)0x5f0993, patchRes, NULL, sizeof(patchRes));
 
-    /* FIXME: dimensions can be different */
-    /* FIXME: Does this actually do anything? */
-    // uint8_t patchTex[] = {0xB8, (texRes & 0xff), (texRes & 0xff00) >> 0x8, (texRes & 0xff0000) >> 0x10, (texRes & 0xff000000) >> 0x18 /* mov texRes, %eax */};
-    // ret = patchText((void*)0x5f0984, patchTex, NULL, sizeof(patchTex));
-
     uint8_t patchFs[] = {0xC6, 0x05, 0xFC, 0xC5, 0xBC, 0x0, fullscreen & 0xff, /* mov fullscreen, %ds:0xbcc5fc */};
     ret = patchText((void*)0x5f09bb, patchFs, NULL, sizeof(patchFs));
 
