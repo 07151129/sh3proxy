@@ -9,7 +9,7 @@
 #include "prefs.h"
 #include "video.h"
 
-bool useCwd, disableSM, sh2Refs;
+bool disableSM, sh2Refs;
 char savepathOverride[1024];
 int resX, resY, texRes;
 bool fullscreen;
@@ -73,7 +73,6 @@ static void init(HANDLE hModule) {
 
     fprintf(stderr, "sh3proxy: found SH3\n");
 
-    useCwd = (GetPrivateProfileInt("Patches", "UseCWD", 0, ".\\sh3proxy.ini") == 1);
     disableSM = (GetPrivateProfileInt("Patches", "DisableSM", 0, ".\\sh3proxy.ini") == 1);
     sh2Refs = (GetPrivateProfileInt("Patches", "SH2Refs", 0, ".\\sh3proxy.ini") == 1);
     GetPrivateProfileString("Patches", "SavepathOverride", NULL, savepathOverride, sizeof(savepathOverride), ".\\sh3proxy.ini");
@@ -81,18 +80,17 @@ static void init(HANDLE hModule) {
     bool borderless = (GetPrivateProfileInt("Patches", "Borderless", 0, ".\\sh3proxy.ini") == 1);
     bool debugLogging = (GetPrivateProfileInt("Patches", "DebugLog", 0, ".\\sh3proxy.ini") == 1);
 
-    if (useCwd) {
-        /* FIXME for windows:
-         * We allocate memory in repl_getAbsPathImpl,
-         * which seems to be incompatible with whatever
-         * allocator the game uses. This patch disables
-         * the corresponding `free' call, at a cost of
-         * small memory leak during initialisation.
-         */
-        uint8_t patch[] = {0x90, 0x90, 0x90, 0x90, 0x90};
-        patchText((void*)0x5f120a, patch, NULL, sizeof(patch));
-        replaceFuncAtAddr((void*)0x5f1130, repl_getAbsPathImpl, NULL);
-    }
+    /* FIXME for windows:
+     * We allocate memory in repl_getAbsPathImpl,
+     * which seems to be incompatible with whatever
+     * allocator the game uses. This patch disables
+     * the corresponding `free' call, at a cost of
+     * small memory leak during initialisation.
+     */
+    uint8_t patch[] = {0x90, 0x90, 0x90, 0x90, 0x90};
+    patchText((void*)0x5f120a, patch, NULL, sizeof(patch));
+    replaceFuncAtAddr((void*)0x5f1130, repl_getAbsPathImpl, NULL);
+
     if (disableSM) {
         VirtualProtect(reloc_smWarn, sizeof(reloc_smWarn), PAGE_READWRITE, NULL);
         replaceFuncAtAddr((void*)0x401000, repl_smWarn, reloc_smWarn);
