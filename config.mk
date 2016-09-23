@@ -1,10 +1,10 @@
-GCC_PATH ?= /usr/local/Cellar/i686-w64-mingw32-gcc/4.9.3
-BINUTILS_PATH ?= /usr/local/Cellar/i686-w64-mingw32-binutils/2.25.1
-MINGW32_PATH ?= $(GCC_PATH)/i686-w64-mingw32
+GCC_PATH ?=
+BINUTILS_PATH ?= 
+MINGW32_PATH ?= 
 
-CC := $(GCC_PATH)/bin/i686-w64-mingw32-gcc
+CC := i686-w64-mingw32-gcc
 LD := $(CC)
-STRIP := $(BINUTILS_PATH)/bin/i686-w64-mingw32-strip
+STRIP := i686-w64-mingw32-strip
 
 ARCH := 32
 
