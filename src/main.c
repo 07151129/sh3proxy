@@ -24,10 +24,10 @@ float toRad(float a) {
 static inline
 int clampPow2(int val, int min, int max) {
     int cnt = 0;
-    __asm__ ("popcnt %1, %0;"
-            : "=r"(cnt)
-            : "r"(val)
-            :);
+
+    for (int v = val; v > 0; v >>= 1)
+        if (v & 1)
+            cnt ++;
 
     if (cnt > 1) /* Must be pow2 */
         val &= (1 << (8 * sizeof(int) - __builtin_clz(val) - 1));
