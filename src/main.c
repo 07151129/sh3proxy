@@ -81,6 +81,8 @@ static void init(HANDLE hModule) {
     bool whiteBorderFix = (GetPrivateProfileInt("Patches", "Win10WhiteBorderFix", 1, ".\\sh3proxy.ini") == 1);
     bool borderless = (GetPrivateProfileInt("Patches", "Borderless", 0, ".\\sh3proxy.ini") == 1);
     bool debugLogging = (GetPrivateProfileInt("Patches", "DebugLog", 0, ".\\sh3proxy.ini") == 1);
+    bool UnlimitedAmmo = (GetPrivateProfileInt("Cheats", "UnlimitedAmmo", 0, ".\\sh3proxy.ini") == 1);
+    bool GodMode = (GetPrivateProfileInt("Cheats", "GodMode", 0, ".\\sh3proxy.ini") == 1);
 
     /* FIXME for windows:
      * We allocate memory in repl_getAbsPathImpl,
@@ -121,6 +123,19 @@ static void init(HANDLE hModule) {
         replaceFuncAtAddr((void*)0x403032, repl_setWindowStyle, NULL);
     if (debugLogging)
         replaceFuncAtAddr((void*)0x41b6a0, debugLog, NULL);
+
+    if (UnlimitedAmmo) { /* unlimited ammo - 66 FF 0C 4D 8E CA 12 07 */
+        uint8_t patch[] = {0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90};
+
+        patchText((void*)0x496a2e, patch, NULL, sizeof(patch));
+    }
+    
+    if (GodMode) { /* God Mode - D9 9E 80 01 00 00, D9 96 80 01 00 00 */
+        uint8_t patch[] = {0x90, 0x90, 0x90, 0x90, 0x90, 0x90};
+
+        patchText((void*)0x4ec96e, patch, NULL, sizeof(patch));
+        patchText((void*)0x4eca95, patch, NULL, sizeof(patch));
+    }
 
     { /* Don't re-create disp.ini */
         uint8_t patch[] = {0x90, 0x90, 0x90, 0x90, 0x90};
