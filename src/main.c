@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <windows.h>
 #define _USE_MATH_DEFINES
 #include <tgmath.h>
@@ -230,14 +231,15 @@ WRAP_FN_IFACE __asm__ ("_"WRAP_FN_EXP);
 WRAP_FN_IFACE {
     static HINSTANCE origDLL;
     if (!origDLL) {
-        char path[1024];
-        GetSystemDirectoryA(path, sizeof(path));
-        char name[] = WRAP_DLL_NAME".dll";
+        char path[MAX_PATH];
 
-        char* fullPath = calloc(strlen(path) + strlen(name) + 1, sizeof(char));
-        snprintf(fullPath, strlen(path) + strlen(name) + 1, "%s\\%s", path, name);
+        memset(path, 0, sizeof(path));
+        GetSystemDirectory(path, MAX_PATH);
 
-        origDLL = LoadLibrary(fullPath);
+        /* Append dll name */
+        strncat(path, "\\"WRAP_DLL_NAME".dll", MAX_PATH);
+
+        origDLL = LoadLibrary(path);
         if (!origDLL)
             ExitProcess(1);
     }
