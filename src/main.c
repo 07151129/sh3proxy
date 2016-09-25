@@ -14,6 +14,7 @@ bool disableSM, sh2Refs;
 char savepathOverride[1024];
 int resX, resY, texRes;
 bool fullscreen;
+HWND hWnd;
 
 float projH;
 
@@ -65,7 +66,7 @@ static void init(HANDLE hModule) {
     fprintf(stderr, "sh3proxy: init\n");
 
     char filename[1024];
-    GetModuleFileNameA(NULL, filename, sizeof(filename));
+    GetModuleFileName(NULL, filename, sizeof(filename));
     if (strstr(filename, "sh3.exe") == NULL ||
         strncmp((char*)0x68A6DC, "SILENT HILL 3", strlen("SILENT HILL 3"))) {
         fprintf(stderr, "sh3proxy: target doesn't seem to be SH3, not patching anything\n");
@@ -140,6 +141,7 @@ static void init(HANDLE hModule) {
     if (patchVideo) {
         resX = GetPrivateProfileInt("Video", "SizeX", 1280, ".\\sh3proxy.ini");
         resY = GetPrivateProfileInt("Video", "SizeY", 720, ".\\sh3proxy.ini");
+        bool AutoDetectRes = (GetPrivateProfileInt("Video", "AutoDetectRes", 0, ".\\sh3proxy.ini") == 1);
         texRes = GetPrivateProfileInt("Video", "TexRes", 1024, ".\\sh3proxy.ini");
         fullscreen = (GetPrivateProfileInt("Video", "Fullscreen", 1, ".\\sh3proxy.ini") == 1);
         float fovX = (float)GetPrivateProfileInt("Video", "FovX", 90, ".\\sh3proxy.ini");
@@ -148,6 +150,18 @@ static void init(HANDLE hModule) {
         int DOFRes = GetPrivateProfileInt("Video", "DOFRes", 512, ".\\sh3proxy.ini");
         bool disableDOF = (GetPrivateProfileInt("Video", "DisableDOF", 0, ".\\sh3proxy.ini") == 1);
         bool disableCutscenesBorder = (GetPrivateProfileInt("Video", "DisableCutscenesBorder", 1, ".\\sh3proxy.ini") == 1);
+
+        hWnd = GetActiveWindow();
+        if (AutoDetectRes || !resX || !resY) {
+            HMONITOR monitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+            MONITORINFO info;
+
+            info.cbSize = sizeof(MONITORINFO);
+            GetMonitorInfo(monitor, &info);
+
+            resX = info.rcMonitor.right - info.rcMonitor.left;
+            resY = info.rcMonitor.bottom - info.rcMonitor.top;
+        }
 
         texRes = clampPow2(texRes, 256, 4096);
         shadowRes = (float)clampPow2(shadowRes, 128, 4096);
