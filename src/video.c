@@ -82,6 +82,24 @@ bool patchTexInit() {
     return ret;
 }
 
+bool patchPreviewRes(int32_t sz) {
+    *(int32_t*)0x6b1434 = sz;
+    *(int32_t*)0x6b1444 = sz;
+
+    uint8_t patch[] = {(sz & 0xff), (sz & 0xff00) >> 0x8, (sz & 0xff0000) >> 0x10, (sz & 0xff000000) >> 0x18};
+
+    bool ret = patchText((void*)0x41de57, patch, NULL, sizeof(patch));
+    ret = patchText((void*)0x41e165, patch, NULL, sizeof(patch));
+
+    float fsz = (float)sz;
+    *(float*)0x6b0d00 = fsz;
+    *(float*)0x6b0d30 = fsz;
+    *(float*)0x6b0d34 = fsz;
+    *(float*)0x6b0d4c = fsz;
+
+    return ret;
+}
+
 bool patchFOV(float projH) {
     bool ret = true;
 
@@ -113,7 +131,7 @@ static uint8_t repl_41b9d0(uint8_t type) {
 }
 
 bool patchDisableDOF() {
-    replaceFuncAtAddr((void*)0x41b9d0, repl_41b9d0, NULL);
+    return replaceFuncAtAddr((void*)0x41b9d0, repl_41b9d0, NULL);
 }
 
 bool patchCutscenesBorder() {
@@ -181,7 +199,7 @@ void printMat16(float* mat) {
                     "%f %f %f %f\n"
                     "%f %f %f %f\n"
                     "%f %f %f %f\n"
-                    "%f %f %f %f\n", mat,
+                    "%f %f %f %f\n", (uintptr_t)mat,
                     mat[0], mat[1], mat[2], mat[3],
                     mat[4], mat[5], mat[6], mat[7],
                     mat[8], mat[9], mat[10], mat[11],

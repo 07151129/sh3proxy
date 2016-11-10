@@ -165,6 +165,7 @@ static void init(HANDLE hModule) {
         int DOFRes = GetPrivateProfileInt("Video", "DOFRes", 512, ".\\sh3proxy.ini");
         bool disableDOF = (GetPrivateProfileInt("Video", "DisableDOF", 0, ".\\sh3proxy.ini") == 1);
         bool disableCutscenesBorder = (GetPrivateProfileInt("Video", "DisableCutscenesBorder", 1, ".\\sh3proxy.ini") == 1);
+        int previewRes = GetPrivateProfileInt("Video", "PreviewRes", 1024, ".\\sh3proxy.ini");
 
         hWnd = GetActiveWindow();
         if (AutoDetectRes || !resX || !resY) {
@@ -213,6 +214,8 @@ static void init(HANDLE hModule) {
             patchCutscenesBorder();
 
         patchShadows((float)shadowRes);
+
+        patchPreviewRes(clampPow2(previewRes, 64, 4096));
 
         // patchTexInit();
 

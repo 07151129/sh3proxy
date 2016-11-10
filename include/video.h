@@ -10,6 +10,7 @@ bool patchDisableDOF();
 bool patchCutscenesBorder();
 bool patchShadows(float res);
 bool patchTexInit();
+bool patchPreviewRes(int32_t sz);
 int repl_isFullscreen();
 int repl_setSizeXY(int, int);
 int repl_416ba0(int unk0);

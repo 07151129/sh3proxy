@@ -15,7 +15,8 @@ CFLAGS := \
     -m$(ARCH) \
     -std=c99 \
     -shared \
-    -fdiagnostics-color=auto
+    -fdiagnostics-color=auto \
+    -Wall
 
 LDFLAGS := \
     -m$(ARCH) \
