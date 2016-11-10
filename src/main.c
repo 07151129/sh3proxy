@@ -61,6 +61,7 @@ void debugLog(const char* fmt, ...) {
 void repl_setTransform();
 void repl_calculateProjMatrix();
 void repl_setWindowStyle();
+void repl_setTexRes();
 
 static void init(HANDLE hModule) {
     fprintf(stderr, "sh3proxy: init\n");
@@ -166,6 +167,7 @@ static void init(HANDLE hModule) {
         bool disableDOF = (GetPrivateProfileInt("Video", "DisableDOF", 0, ".\\sh3proxy.ini") == 1);
         bool disableCutscenesBorder = (GetPrivateProfileInt("Video", "DisableCutscenesBorder", 1, ".\\sh3proxy.ini") == 1);
         int previewRes = GetPrivateProfileInt("Video", "PreviewRes", 1024, ".\\sh3proxy.ini");
+        bool matchRes = (GetPrivateProfileInt("Video", "MatchRes", 1, ".\\sh3proxy.ini") == 1);
 
         hWnd = GetActiveWindow();
         if (AutoDetectRes || !resX || !resY) {
@@ -217,9 +219,15 @@ static void init(HANDLE hModule) {
 
         patchPreviewRes(clampPow2(previewRes, 64, 4096));
 
+        if (matchRes) {
+            replaceFuncAtAddr((void*)0x402b80, repl_getResX, NULL);
+            replaceFuncAtAddr((void*)0x402b90, repl_getResY, NULL);
+            replaceFuncAtAddr((void*)0x402e00, repl_setTexRes, NULL);
+        }
+
         // patchTexInit();
 
-        if (!patchVideoInit())
+        if (!patchVideoInit(matchRes))
             fprintf(stderr, "sh3proxy: video patching failed\n");
     }
 }

@@ -15,6 +15,14 @@ int repl_getSizeY() {
     return resY;
 }
 
+int repl_getResX() {
+    return resX;
+}
+
+int repl_getResY() {
+    return resY;
+}
+
 int repl_isFullscreen() {
     return (int)fullscreen;
 }
@@ -50,19 +58,22 @@ int repl_setSizeXY(int x, int y) {
     return 0;
 }
 
-bool patchVideoInit() {
+bool patchVideoInit(bool customRes) {
     bool ret = true;
-
-    /* Disable video reset on safe mode */
-    uint8_t patchRes[] = {0xC7, 0x05, 0xE8, 0xC5, 0xBC, 0x00, (resX & 0xff), (resX & 0xff00) >> 0x8, (resX & 0xff0000) >> 0x10, (resX & 0xff000000) >> 0x18, /* mov resX, %ds:0xbcc5e8 */
-        0xC7, 0x05, 0xEC, 0xC5, 0xBC, 0x00, (resY & 0xff), (resY & 0xff00) >> 0x8, (resY & 0xff0000) >> 0x10, (resY & 0xff000000) >> 0x18 /* mov resY, %ds:0xbcc5ec */};
-    ret = patchText((void*)0x5f0993, patchRes, NULL, sizeof(patchRes));
 
     uint8_t patchFs[] = {0xC6, 0x05, 0xFC, 0xC5, 0xBC, 0x0, fullscreen & 0xff, /* mov fullscreen, %ds:0xbcc5fc */};
     ret = patchText((void*)0x5f09bb, patchFs, NULL, sizeof(patchFs));
 
+    /* Ignore size change */
     uint8_t patchSettings[] = {0x25, 0xFF, 0xFF, 0xBF, 0xFF /* and $0xffbfffff, %eax */};
     ret = patchText((void*)0x5e6134, patchSettings, NULL, sizeof(patchSettings));
+
+    if (customRes) {
+        /* Ignore resolution change */
+        patchSettings[3] = 0xff;
+        patchSettings[4] = 0xfe; /* and $0xffefffff, %eax */
+        ret = patchText((void*)0x5e3e75, patchSettings, NULL, sizeof(patchSettings));
+    }
 
     return ret;
 }

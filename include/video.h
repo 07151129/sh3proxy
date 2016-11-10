@@ -3,7 +3,7 @@
 
 int repl_getSizeX();
 int repl_getSizeY();
-bool patchVideoInit();
+bool patchVideoInit(bool customRes);
 bool patchFOV(float projH);
 bool patchDOFResolution(int32_t res);
 bool patchDisableDOF();
@@ -13,6 +13,8 @@ bool patchTexInit();
 bool patchPreviewRes(int32_t sz);
 int repl_isFullscreen();
 int repl_setSizeXY(int, int);
+int repl_getResX();
+int repl_getResY();
 int repl_416ba0(int unk0);
 int repl_41b2c0();
 int repl_41b250_1();
