@@ -9,7 +9,8 @@ STRIP := i686-w64-mingw32-strip
 ARCH := 32
 
 CFLAGS_OPT := \
-    -Os
+    -Os \
+    -mmmx
 
 CFLAGS := \
     -m$(ARCH) \
@@ -22,4 +23,5 @@ LDFLAGS := \
     -m$(ARCH) \
     -shared \
     -Wl,--enable-auto-import \
-    -Wl,--enable-stdcall-fixup
+    -Wl,--enable-stdcall-fixup \
+    -e_DllMainCRTStartup@12
