@@ -16,8 +16,6 @@ int resX, resY, texRes;
 bool fullscreen;
 HWND hWnd;
 
-float projH;
-
 static inline
 float toRad(float a) {
     return a * M_PI / 180.0f;
@@ -184,7 +182,8 @@ static void init(HANDLE hModule) {
         texRes = clampPow2(texRes, 256, 4096);
         shadowRes = (float)clampPow2(shadowRes, 128, 4096);
 
-        projH = sqrt(1.0f / (1.54f * tan(toRad(fovX) / 2.0f)));
+        float projH = sqrt(1.0f / (1.54f * tan(toRad(fovX) / 2.0f)));
+        float projV = projH * sqrt((float) resX / resY * 0.8f);
         // fprintf(stderr, "projH: %f\n", projH);
 
         replaceFuncAtAddr((void*)0x4168e0, repl_getSizeX, NULL);
@@ -193,7 +192,7 @@ static void init(HANDLE hModule) {
         replaceFuncAtAddr((void*)0x416ae0, repl_setSizeXY, NULL);
         replaceFuncAtAddr((void*)0x416ba0, repl_416ba0, NULL);
         replaceFuncAtAddr((void*)0x416b90, repl_setRefreshRate, NULL);
-        patchFOV(projH);
+        patchFOV(projH, projV);
         // replaceFuncAtAddr((void*)0x67bba7, repl_setTransform, NULL);
         // replaceFuncAtAddr((void*)0x43beb0, repl_calculateProjMatrix, NULL);
         

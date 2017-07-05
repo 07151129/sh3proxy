@@ -4,7 +4,7 @@
 int repl_getSizeX();
 int repl_getSizeY();
 bool patchVideoInit(bool customRes);
-bool patchFOV(float projH);
+bool patchFOV(float projH, float projV);
 bool patchDOFResolution(int32_t res);
 bool patchDisableDOF();
 bool patchCutscenesBorder();

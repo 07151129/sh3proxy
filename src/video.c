@@ -111,14 +111,15 @@ bool patchPreviewRes(int32_t sz) {
     return ret;
 }
 
-bool patchFOV(float projH) {
+bool patchFOV(float projH, float projV) {
     bool ret = true;
 
     DWORD old_prot = 0;
-    size_t sz = 0x43b649 - 0x43b63f+ 1;
-    VirtualProtect((void*)0x43b63f, sz, PAGE_READWRITE, &old_prot);
+    size_t sz = 0x43b649 - 0x43b635+ 1;
+    VirtualProtect((void*)0x43b635, sz, PAGE_READWRITE, &old_prot);
     *(float*)0x43b645 = projH; /* initial value */
-    VirtualProtect((void*)0x43b63f, sz, old_prot, NULL);
+    *(float*)0x43b63b = projV;
+    VirtualProtect((void*)0x43b635, sz, old_prot, NULL);
 
     VirtualProtect((void*)0x68f064, sizeof(float), PAGE_READWRITE, &old_prot);
     *(float*)0x68f064 = projH; /* zoom out threshold */
