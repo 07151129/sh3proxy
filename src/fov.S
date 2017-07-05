@@ -1,4 +1,4 @@
-.globl _repl_setTransform, _repl_calculateProjMatrix
+.globl _repl_setTransform
 .text
 
 #define PRINT_MAT(addr) push %ecx; \
@@ -24,19 +24,4 @@ _repl_setTransform:
     call *%ds:0x94(%ecx);
     jmpl *(ret_setTransform)
 
-_repl_calculateProjMatrix:
-    sub $0xa8, %esp;
-    push %eax;
-
-    // mov _projV, %eax;
-    // mov %eax, %ds:(0x742ab8);
-
-    movl _projH, %eax;
-    movl %eax, %ds:(0x742ab4);
-    // movl $0x3f800000, %ds:(0x743bc8);
-
-    pop %eax;
-    jmpl *(ret_setFOVY);
-
 ret_setTransform: .long 0x67bbad
-ret_setFOVY: .long 0x43beb6
