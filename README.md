@@ -40,4 +40,3 @@ Caveats
 * Fullscreen mode might not work at some resolutions
 * sh3proxy relies on hardcoded memory addresses. This means it might not be compatible with your version of
 `sh3.exe`. sh3proxy has only been tested with `sh3.exe` with `372ae792` CRC32 sum
-* DEP has to be disabled for `sh3.exe`

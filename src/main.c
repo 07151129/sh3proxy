@@ -95,7 +95,8 @@ static void init(HANDLE hModule) {
     replaceFuncAtAddr((void*)0x5f1130, repl_getAbsPathImpl, NULL);
 
     if (disableSM) {
-        VirtualProtect(reloc_smWarn, sizeof(reloc_smWarn), PAGE_READWRITE, NULL);
+        DWORD prot = 0;
+        VirtualProtect(reloc_smWarn, sizeof(reloc_smWarn), PAGE_READWRITE, &prot);
         replaceFuncAtAddr((void*)0x401000, repl_smWarn, reloc_smWarn);
 
         /* Relocate message routine: we still need
@@ -110,7 +111,7 @@ static void init(HANDLE hModule) {
                            (disp & 0xff000000) >> 0x18
                            };
         memcpy((uint8_t*)(reloc_smWarn + 45), patch, sizeof(patch));
-        VirtualProtect(reloc_smWarn, sizeof(reloc_smWarn), PAGE_EXECUTE_READ, NULL);
+        VirtualProtect(reloc_smWarn, sizeof(reloc_smWarn), prot, NULL);
     }
     if (sh2Refs)
         replaceFuncAtAddr((void*)0x5e9760, repl_updateSH2InstallDir, NULL);
