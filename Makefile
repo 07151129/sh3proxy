@@ -10,7 +10,8 @@ SRC := \
 	src/main.c \
 	src/patch.c \
 	src/get_path.c \
-	src/video.c
+	src/video.c \
+	src/sync.c
 
 SRC_ASM := \
 	src/fov.S \
@@ -50,7 +51,7 @@ build/%.o: src/%.c
 
 $(TARGET).sym: $(OBJ)
 	@echo ld $(notdir $@)
-	$(VERBOSE) $(ENV) $(LD) $(LDFLAGS) -o $@ $(OBJ)
+	$(VERBOSE) $(ENV) $(LD) $(LDFLAGS) -o $@ $(OBJ) $(LDLIBS)
 
 $(TARGET): $(TARGET).sym
 	@echo strip $(notdir $@)

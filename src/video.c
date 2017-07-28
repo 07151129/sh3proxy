@@ -42,6 +42,7 @@ int repl_41b250_1() {
 
 int repl_setRefreshRate(int rate) {
     /* Disable refresh rate reset */
+    // *(uint32_t*)0x72c790 = rate;
     return 0;
 }
 

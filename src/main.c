@@ -5,9 +5,10 @@
 #define _USE_MATH_DEFINES
 #include <tgmath.h>
 
-#include "patch.h"
 #include "get_path.h"
+#include "patch.h"
 #include "prefs.h"
+#include "sync.h"
 #include "video.h"
 
 bool disableSM, sh2Refs;
@@ -143,13 +144,13 @@ static void init(HANDLE hModule) {
     }
 
     {
-        bool CapFPS = (GetPrivateProfileInt("FixJitter", "CapFPS", 0, ".\\sh3proxy.ini") == 1);
-        bool AltFix = (GetPrivateProfileInt("FixJitter", "AltFix", 0, ".\\sh3proxy.ini") == 1);
+        bool enable = (GetPrivateProfileInt("FixJitter", "Enable", 1, ".\\sh3proxy.ini") == 1);
+        bool showfps = (GetPrivateProfileInt("FixJitter", "ShowFPS", 1, ".\\sh3proxy.ini") == 1);
 
-        if (CapFPS)
-            replaceFuncAtAddr((void*)0x41b250, repl_41b250_2, NULL);
-        else if (AltFix)
-            replaceFuncAtAddr((void*)0x41b250, repl_41b250_1, NULL);
+        if (enable) {
+            sync_init(60, showfps);
+            sync_patch();
+        }
     }
 
     bool patchVideo = (GetPrivateProfileInt("Video", "Enable", 0, ".\\sh3proxy.ini") == 1);
