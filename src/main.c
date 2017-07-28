@@ -40,9 +40,7 @@ int clampPow2(int val, int min, int max) {
     return val;
 }
 
-__attribute__((section(".relocated")))
-uint8_t reloc_smWarn[90];
-
+uint8_t* reloc_smWarn;
 int repl_smWarn(int arg) {
     if (arg == 8)
         return 1;
@@ -95,8 +93,10 @@ static void init(HANDLE hModule) {
     replaceFuncAtAddr((void*)0x5f1130, repl_getAbsPathImpl, NULL);
 
     if (disableSM) {
-        DWORD prot = 0;
-        VirtualProtect(reloc_smWarn, sizeof(reloc_smWarn), PAGE_READWRITE, &prot);
+        size_t reloc_smWarn_sz = 90;
+        reloc_smWarn = VirtualAlloc(NULL, reloc_smWarn_sz, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+
+        // VirtualProtect(reloc_smWarn, reloc_smWarn_sz, PAGE_READWRITE, &prot);
         replaceFuncAtAddr((void*)0x401000, repl_smWarn, reloc_smWarn);
 
         /* Relocate message routine: we still need
@@ -111,7 +111,7 @@ static void init(HANDLE hModule) {
                            (disp & 0xff000000) >> 0x18
                            };
         memcpy((uint8_t*)(reloc_smWarn + 45), patch, sizeof(patch));
-        VirtualProtect(reloc_smWarn, sizeof(reloc_smWarn), prot, NULL);
+        VirtualProtect(reloc_smWarn, reloc_smWarn_sz, PAGE_EXECUTE_READ, NULL);
     }
     if (sh2Refs)
         replaceFuncAtAddr((void*)0x5e9760, repl_updateSH2InstallDir, NULL);
