@@ -17,7 +17,8 @@ CFLAGS := \
     -std=c99 \
     -shared \
     -fdiagnostics-color=auto \
-    -Wall
+    -Wall \
+    -D_WIN32_WINNT=0x0600
 
 LDFLAGS := \
     -m$(ARCH) \

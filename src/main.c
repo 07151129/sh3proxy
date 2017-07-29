@@ -111,6 +111,10 @@ static void init(HANDLE hModule) {
 
     fprintf(stderr, "sh3proxy: init\n");
 
+    /* It looks like sh3.exe is not compatible with nx */
+    if (!SetProcessDEPPolicy(0))
+        fprintf(stderr, "sh3proxy: failed to disable dep\n");
+
     char filename[1024];
     GetModuleFileName(NULL, filename, sizeof(filename));
     if (strstr(filename, "sh3.exe") == NULL ||
