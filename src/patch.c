@@ -42,7 +42,7 @@ bool patchText(void* dst, const uint8_t* repl, uint8_t* bak, size_t replSz) {
         memcpy(bak, dst, replSz);
     memcpy(dst, repl, replSz);
 
-    VirtualProtect(dst, replSz, old_prot, NULL);
+    VirtualProtect(dst, replSz, old_prot, &old_prot);
 
     return true;
 }
