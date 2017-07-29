@@ -120,11 +120,11 @@ bool patchFOV(float projH, float projV) {
     VirtualProtect((void*)0x43b635, sz, PAGE_READWRITE, &old_prot);
     *(float*)0x43b645 = projH; /* initial value */
     *(float*)0x43b63b = projV;
-    VirtualProtect((void*)0x43b635, sz, old_prot, NULL);
+    VirtualProtect((void*)0x43b635, sz, old_prot, &old_prot);
 
     VirtualProtect((void*)0x68f064, sizeof(float), PAGE_READWRITE, &old_prot);
     *(float*)0x68f064 = projH; /* zoom out threshold */
-    VirtualProtect((void*)0x68f064, sizeof(float), old_prot, NULL);
+    VirtualProtect((void*)0x68f064, sizeof(float), old_prot, &old_prot);
 
     return ret;
 }
@@ -176,7 +176,7 @@ bool patchShadows(float res) {
         for (size_t i = 0; i < sizeof(toPatch) / sizeof(*toPatch); i++)
             *(float*)toPatch[i] = res;
 
-        VirtualProtect((void*)0x48d88b, sz, old_prot, NULL);
+        VirtualProtect((void*)0x48d88b, sz, old_prot, &old_prot);
     }
 
     {
@@ -188,7 +188,7 @@ bool patchShadows(float res) {
         for (size_t i = 0; i < sizeof(toPatch) / sizeof(*toPatch); i++)
             *(float*)toPatch[i] = res;
 
-        VirtualProtect((void*)0x48d661, sz, old_prot, NULL);
+        VirtualProtect((void*)0x48d661, sz, old_prot, &old_prot);
     }
 
     {
@@ -200,7 +200,7 @@ bool patchShadows(float res) {
         for (size_t i = 0; i < sizeof(toPatch) / sizeof(*toPatch); i++)
             *(int*)toPatch[i] = ires;
 
-        VirtualProtect((void*)0x427235, sz, old_prot, NULL);
+        VirtualProtect((void*)0x427235, sz, old_prot, &old_prot);
     }
 
     return ret;

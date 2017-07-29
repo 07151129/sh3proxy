@@ -164,7 +164,9 @@ static void init(HANDLE hModule) {
                            (disp & 0xff000000) >> 0x18
                            };
         memcpy((uint8_t*)(reloc_smWarn + 45), patch, sizeof(patch));
-        VirtualProtect(reloc_smWarn, reloc_smWarn_sz, PAGE_EXECUTE_READ, NULL);
+
+        DWORD old_prot;
+        VirtualProtect(reloc_smWarn, reloc_smWarn_sz, PAGE_EXECUTE_READ, &old_prot);
     }
     if (sh2Refs)
         replaceFuncAtAddr((void*)0x5e9760, repl_updateSH2InstallDir, NULL);
@@ -257,7 +259,7 @@ static void init(HANDLE hModule) {
             VirtualProtect((void*)0x690634, 2 * sizeof(float), PAGE_READWRITE, &old_prot);
             *(float*)0x690634 = -ratio; /* gFogRateBack */
             *(float*)0x690638 = ratio; /* gFogRateFw */
-            VirtualProtect((void*)0x690634, 2 * sizeof(float), old_prot, NULL);
+            VirtualProtect((void*)0x690634, 2 * sizeof(float), old_prot, &old_prot);
         }
 
         if (!disableDOF)
