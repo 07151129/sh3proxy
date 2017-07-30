@@ -26,8 +26,7 @@ LDFLAGS := \
     -Wl,--enable-auto-import \
     -Wl,--enable-stdcall-fixup \
     -e_DllMainCRTStartup@12 \
-    -static-libgcc \
-    -Wl,--nxcompat
+    -static-libgcc
 
 LDLIBS := \
 	-lwinmm

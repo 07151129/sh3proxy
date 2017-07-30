@@ -34,8 +34,7 @@ freely, subject to the following restrictions:
 
 static uint32_t fps_desired;
 static const uint32_t WAIT_THRESH_MS = 10;
-#define FPS_REPORT_PERIOD 20
-static const double FPS_REPORT_PERIOD_R = 1.0f / 30;
+static const uint32_t FPS_REPORT_PERIOD_MS = 1500;
 static uint32_t fps_mul, fps_total;
 
 static bool usePerfCounter, showfps;
@@ -100,13 +99,29 @@ uint32_t sync_nexttime() {
     return ret;
 }
 
-static inline
-void report_framerate(double avg_ms) {
-    const char* game = "SILENT HILL 3";
-    static char title[55];
-    snprintf(title, sizeof(title) - 1, "[Average TPF: %7.3f ms / FPS: %7.3f] %s", avg_ms, 1000.0f / avg_ms, game);
+void report_framerate() {
+    static uint32_t start_time, prev_time;
+    static uint32_t nframes, sum_deltas;
 
-    SetWindowText(*(HWND*)0x72bfe4, title);
+    uint32_t now = sync_getticks();
+
+    nframes++;
+
+    if (now > start_time + FPS_REPORT_PERIOD_MS) {
+        double avg_ms = (double)sum_deltas / nframes;
+
+        static char* game = (void*)0x68a6dc;
+        static char title[55];
+        snprintf(title, sizeof(title) - 1, "[Average TPF: %7.3f ms / FPS: %7.3f] %s", avg_ms, 1000.0f / avg_ms, game);
+        SetWindowText(*(HWND*)0x72bfe4, title);
+
+        start_time = now;
+        nframes = 0;
+        sum_deltas = 0;   
+    } else {
+        sum_deltas += now - prev_time;
+        prev_time = now;
+    }
 }
 
 void sync_dosync() {
@@ -154,23 +169,8 @@ void sync_dosync() {
 
     *(uint32_t*)0x72c7f4 = niter;
     *(uint32_t*)0x72c7f8 = sleep_count - 1;
-
-    if (showfps) {
-        static uint32_t finished_time;
-        static uint32_t nframes, sum_deltas;
-
-        if (++nframes == FPS_REPORT_PERIOD) {
-            report_framerate((double)sum_deltas * FPS_REPORT_PERIOD_R);
-            sum_deltas = 0;
-            nframes = 0;
-        } else
-            sum_deltas += tstart - finished_time;
-
-        finished_time = tstart;
-    }
 }
 
-static
 int init_nop() {
     if (!fps_desired) /* Try to reuse refresh rate */
         fps_desired = *(uint32_t*)0x72c790;
@@ -180,6 +180,8 @@ int init_nop() {
     return 0;
 }
 
+void report_framerate_trampl();
+
 void sync_patch() {
     /* Disable timer init */
     replaceFuncAtAddr((void*)0x41b270, init_nop, NULL);
@@ -188,6 +190,9 @@ void sync_patch() {
     uint8_t nops[] = {0x90, 0x90, 0x90, 0x90, 0x90};
     patchText((void*)0x41992d, nops, NULL, sizeof(nops));
     // patchText((void*)0x5f1853, nops, NULL, sizeof(nops));
+    
+    if (showfps)
+        replaceFuncAtAddr((void*)0x41995a, report_framerate_trampl, NULL);
 
     /* Force synchronization using sync_dosync before BeginScene */
     replaceFuncAtAddr((void*)0x41b5f0, sync_dosync, NULL);
