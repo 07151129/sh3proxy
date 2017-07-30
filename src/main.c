@@ -68,6 +68,8 @@ https://github.com/vrpn/vrpn/blob/master/server_src/
 miles_sound_server/v6.0/Console.cpp#L170
  */
 void redirectStdio() {
+    int cols = 75;
+    int lines = 20;
     // Create a console
     AllocConsole();
     AttachConsole(GetCurrentProcessId());
@@ -82,6 +84,26 @@ void redirectStdio() {
     GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &coninfo);
     coninfo.dwSize.Y = MAX_CONSOLE_LINES;
     SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), coninfo.dwSize);
+
+    HWND console = GetConsoleWindow();
+    HANDLE hOutput = CreateFile("CONOUT$", GENERIC_READ | GENERIC_WRITE, FILE_SHARE_WRITE, NULL, OPEN_EXISTING, 0, 0);
+    CONSOLE_FONT_INFO fi;
+    if (GetCurrentConsoleFont(hOutput, false, &fi)) {
+        COORD fontSize = GetConsoleFontSize(hOutput, fi.nFont);
+        if (fontSize.X > 0 && fontSize.Y > 0) {
+            int reqWidth = fontSize.X * cols;
+            int reqHeight = fontSize.Y * lines;
+            RECT r;
+            GetWindowRect(console, &r);
+            int width = r.right - r.left;
+            int height = r.bottom - r.top;
+
+            if (width < reqWidth) width = reqWidth;
+            if (height < reqHeight) height = reqHeight;
+            MoveWindow(console, r.left, r.top, width, height, true);
+        }
+        CloseHandle(hOutput);
+    }
 
     // redirect unbuffered STDOUT to the console
     lStdHandle = (long)GetStdHandle(STD_OUTPUT_HANDLE);
