@@ -85,20 +85,6 @@ void sync_quit() {
     showfps = false;
 }
 
-static inline
-long double sync_period() {
-    return 1000.0f / (long double)fps_desired;
-}
-
-static inline
-uint32_t sync_nexttime() {
-    long double ret = sync_period() * ++fps_mul;
-    if (abs(round(ret) - ret) < 0.00001f)
-        ret = round(ret);
-    fps_total += ret;
-    return ret;
-}
-
 void report_framerate() {
     static uint32_t start_time, prev_time;
     static uint32_t nframes, sum_deltas;
