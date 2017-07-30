@@ -17,6 +17,7 @@ bool disableSM, sh2Refs;
 char savepathOverride[1024];
 int resX, resY, texRes;
 bool fullscreen;
+uint32_t vsync;
 HWND hWnd;
 
 static inline
@@ -61,7 +62,7 @@ void repl_setTransform();
 void repl_calculateProjMatrix();
 void repl_setWindowStyle();
 void repl_setTexRes();
-void repl_setPresentationIntervalWindowed();
+void repl_setPresentationIntervalWindowed(), repl_setPresentationIntervalFullscreen();
 
 /*
 https://github.com/vrpn/vrpn/blob/master/server_src/
@@ -233,6 +234,7 @@ static void init(HANDLE hModule) {
     if (patchVideo) {
         resX = GetPrivateProfileInt("Video", "SizeX", 1280, ".\\sh3proxy.ini");
         resY = GetPrivateProfileInt("Video", "SizeY", 720, ".\\sh3proxy.ini");
+        vsync = GetPrivateProfileInt("Video", "VSync", 0, ".\\sh3proxy.ini");
         bool AutoDetectRes = (GetPrivateProfileInt("Video", "AutoDetectRes", 0, ".\\sh3proxy.ini") == 1);
         texRes = GetPrivateProfileInt("Video", "TexRes", 1024, ".\\sh3proxy.ini");
         fullscreen = (GetPrivateProfileInt("Video", "Fullscreen", 1, ".\\sh3proxy.ini") == 1);
@@ -267,6 +269,8 @@ static void init(HANDLE hModule) {
         replaceFuncAtAddr((void*)0x4168e0, repl_getSizeX, NULL);
         replaceFuncAtAddr((void*)0x4168f0, repl_getSizeY, NULL);
         replaceFuncAtAddr((void*)0x416c90, repl_isFullscreen, NULL);
+        replaceFuncAtAddr((void*)0x418e60, repl_setPresentationIntervalWindowed, NULL);
+        replaceFuncAtAddr((void*)0x418dff, repl_setPresentationIntervalFullscreen, NULL);
         replaceFuncAtAddr((void*)0x416ae0, repl_setSizeXY, NULL);
         replaceFuncAtAddr((void*)0x416ba0, repl_416ba0, NULL);
         replaceFuncAtAddr((void*)0x416b90, repl_setRefreshRate, NULL);
