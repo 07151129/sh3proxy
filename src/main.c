@@ -306,8 +306,6 @@ static void init(HANDLE hModule) {
             replaceFuncAtAddr((void*)0x402e00, repl_setTexRes, NULL);
         }
 
-        // patchTexInit();
-
         if (!patchVideoInit(matchRes))
             fprintf(stderr, "sh3proxy: video patching failed\n");
     }

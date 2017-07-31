@@ -1,16 +1,5 @@
-.globl _repl_texInit, _repl_setWindowStyle, _repl_setTexRes, _repl_setPresentationIntervalWindowed, _repl_setPresentationIntervalFullscreen
+.globl _repl_setWindowStyle, _repl_setTexRes, _repl_setPresentationIntervalWindowed, _repl_setPresentationIntervalFullscreen
 .text
-
-_repl_texInit:
-    add $4, %esp;
-    lea 0x15(,%eax,4), %eax;
-    cmp $512, %edi;
-    jne .L_texInit_ne512;
-    push $0
-    jmp *(ret_texInit);
-    .L_texInit_ne512:
-    push $1;
-    jmp *(ret_texInit);
 
 _repl_setWindowStyle:
     pushl $0x80000000; /* X */
@@ -49,7 +38,6 @@ _repl_setPresentationIntervalFullscreen:
     movl %ebx, (0x72c694);
     jmp *(ret_setPresentationIntervalFullscreen);
 
-ret_texInit: .long 0x461dc4
 ret_setWindowStyle: .long 0x403038
 ret_setTexRes: .long 0x402e06
 ret_setPresentationIntervalWindowed: .long 0x418e66
