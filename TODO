@@ -1,9 +1,0 @@
-[x] Replacing registry paths with CWD
-[x] Disabling safe mode (make sure we disable reset of settings as well)
-[x] Fix save issues
-[X] SH2 references without proper save
-[X] Video resolution (screen vs framebuffer)
-[ ] Multisampling
-[X] Video aspect rate
-[X] Fog density
-[X] FOV
