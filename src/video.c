@@ -79,8 +79,6 @@ bool patchVideoInit(bool customRes) {
     return ret;
 }
 
-void repl_texInit();
-
 bool patchPreviewRes(int32_t sz) {
     *(int32_t*)0x6b1434 = sz;
     *(int32_t*)0x6b1444 = sz;
@@ -191,6 +189,33 @@ bool patchShadows(float res) {
     }
 
     return ret;
+}
+
+bool patchPixelation(float resX, float resY) {
+    static uint8_t nops[24];
+    memset(nops, 0x90, sizeof(nops));
+    /* fstp %st(0) */
+    nops[21] = 0xdd;
+    nops[22] = 0xd8;
+
+    patchText((void*)0x426121, nops, NULL, sizeof(nops) - 1);
+
+    /* fstp %st(0) twice */
+    nops[20] = nops[22] = 0xdd;
+    nops[21] = nops[23] = 0xd8;
+
+    patchText((void*)0x41c0d6, nops, NULL, sizeof(nops));
+    patchText((void*)0x41c0f4, nops, NULL, sizeof(nops));
+
+    uintptr_t xsizes[] = {0x6b1300, 0x6b12d0, 0x6b0bc0, 0x6b0b60, 0x6b0be0, 0x6b0b90};
+    uintptr_t ysizes[] = {0x6b131c, 0x6b1304, 0x6b0be4, 0x6b0b94, 0x6b0bf4, 0x6b0bac};
+
+    for (size_t i = 0; i < sizeof(xsizes) / sizeof(*xsizes); i++)
+        *(float*)xsizes[i] = resX - 0.5f;
+    for (size_t i = 0; i < sizeof(ysizes) / sizeof(*ysizes); i++)
+        *(float*)ysizes[i] = resY - 0.5f;
+
+    return true;
 }
 
 __attribute__((fastcall))

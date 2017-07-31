@@ -11,6 +11,7 @@ bool patchCutscenesBorder();
 bool patchShadows(float res);
 bool patchTexInit();
 bool patchPreviewRes(int32_t sz);
+bool patchPixelation(float resX, float resY);
 int repl_isFullscreen();
 int repl_setSizeXY(int, int);
 int repl_getResX();

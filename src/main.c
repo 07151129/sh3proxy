@@ -297,6 +297,7 @@ static void init(HANDLE hModule) {
             patchCutscenesBorder();
 
         patchShadows((float)shadowRes);
+        patchPixelation((float)resX, (float)resY);
 
         patchPreviewRes(clampPow2(previewRes, 64, 4096));
 
