@@ -34,6 +34,7 @@ freely, subject to the following restrictions:
 
 static uint32_t fps_desired;
 static const uint32_t WAIT_THRESH_MS = 10;
+static const uint32_t FPS_COMPENSATE_THRESH = 50;
 static const uint32_t FPS_REPORT_PERIOD_MS = 1500;
 static uint32_t fps_mul, fps_total;
 
@@ -110,14 +111,9 @@ void report_framerate() {
     }
 }
 
+__attribute__ ((cdecl))
 void sync_dosync() {
-    uint32_t niter_target = *(uint32_t*)0x72c7e8;
-    if (!niter_target)
-        return;
-
-    uint32_t sleep_count = 0;
-    if (niter_target > fps_desired)
-        niter_target = fps_desired;
+    int32_t sleep_count = 0;
 
     static uint32_t nms_rem;
     static uint32_t prev_time;
@@ -125,9 +121,8 @@ void sync_dosync() {
         prev_time = sync_getticks();
 
     uint32_t tstart = sync_getticks();
-    uint32_t niter = 0;
 
-    for (; niter < niter_target || !sleep_count; niter++) {
+    while (!sleep_count) {
         prev_time += (nms_rem + 1000) / fps_desired;
         nms_rem = (nms_rem + 1000) % fps_desired;
 
@@ -152,9 +147,6 @@ void sync_dosync() {
             ;
         tstart = sync_getticks();
     }
-
-    *(uint32_t*)0x72c7f4 = niter;
-    *(uint32_t*)0x72c7f8 = sleep_count - 1;
 }
 
 int init_nop() {
@@ -166,7 +158,32 @@ int init_nop() {
     return 0;
 }
 
-void report_framerate_trampl();
+void compute_slowdown_coeff() {
+
+}
+
+void report_framerate_trampl(), scale_event_rate_trampl();
+
+__attribute__ ((cdecl))
+void scale_event_rate() {
+    static uint32_t prev;
+
+    uint32_t now = sync_getticks();
+    uint32_t tdiff = now - prev;
+
+    float rate = 1.0f;
+    if (tdiff > 1000 / FPS_COMPENSATE_THRESH)
+        rate = (float)tdiff/ 17.0f;
+
+    prev = now;
+
+    *(uint32_t*)0x70e67c0 = (uint32_t)rate;
+    *(uint32_t*)0x70e67a4 = (uint32_t)rate;
+    *(float*)0x70e67a8 = rate;
+    *(float*)0x70e67b4 = rate;
+    *(float*)0x70e67ac = rate * 0.016666666666666666f; /* gRendertimeScaled */
+    *(float*)0x70e67c4 = 60.0f / rate; /* gFPSScaled */
+}
 
 void sync_patch() {
     /* Disable timer init */
@@ -175,7 +192,11 @@ void sync_patch() {
     /* Disable synchronization */
     uint8_t nops[] = {0x90, 0x90, 0x90, 0x90, 0x90};
     patchText((void*)0x41992d, nops, NULL, sizeof(nops));
-    // patchText((void*)0x5f1853, nops, NULL, sizeof(nops));
+
+    /* Disable event rate scaling from event loop */
+    replaceFuncAtAddr((void*)0x5f1a73, scale_event_rate_trampl, NULL);
+
+    replaceFuncAtAddr((void*)0x5f15e0, compute_slowdown_coeff, NULL);
     
     if (showfps)
         replaceFuncAtAddr((void*)0x41995a, report_framerate_trampl, NULL);

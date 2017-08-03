@@ -30,8 +30,6 @@ char* repl_getAbsPathImpl(enum resource_t type, const char* relPath) {
         cwd = calloc(1024, sizeof(char));
         GetCurrentDirectoryA(1024, cwd);
     }
-
-    /* FIXME: Locking */
     
     size_t len = 0;
     if (type != SAVE) {

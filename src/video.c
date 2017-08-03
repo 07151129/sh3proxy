@@ -31,13 +31,8 @@ int repl_416ba0(int unk0) {
     return 0;
 }
 
-/* Fix jitter (FIXME) */
 int repl_41b250_2() {
     return 2;
-}
-
-int repl_41b250_1() {
-    return 1;
 }
 
 int repl_setRefreshRate(int rate) {

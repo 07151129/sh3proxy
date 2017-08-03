@@ -223,10 +223,14 @@ static void init(HANDLE hModule) {
     {
         bool enable = (GetPrivateProfileInt("FixJitter", "Enable", 1, ".\\sh3proxy.ini") == 1);
         bool showfps = (GetPrivateProfileInt("FixJitter", "ShowFPS", 1, ".\\sh3proxy.ini") == 1);
-
+        bool capfps = (GetPrivateProfileInt("FixJitter", "CapFPS", 0, ".\\sh3proxy.ini") == 1);
         if (enable) {
-            sync_init(60, showfps);
-            sync_patch();
+            if (capfps)
+                replaceFuncAtAddr((void*)0x41b250, repl_41b250_2, NULL);
+            else {
+                sync_init(60, showfps);
+                sync_patch();
+            }
         }
     }
 
