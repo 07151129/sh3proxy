@@ -17,12 +17,17 @@ int repl_updateSH2InstallDir() {
 }
 
 void* (*target_malloc)(size_t) = (void*)0x662f9b;
+volatile HANDLE* gFileLock = (void*)0xbcc628;
 
 char* repl_getAbsPathImpl(enum resource_t type, const char* relPath) {
+    if (*gFileLock)
+        while (WaitForSingleObject(*gFileLock, INFINITE))
+            ;
+
     char* ret = NULL;
     if (type > SOUND) { /* default case */
         ret = target_malloc(strlen(relPath) + strlen((char*)0x68a7b4));
-        return ret;
+        goto done;
     }
 
     static char* cwd;
@@ -57,6 +62,10 @@ char* repl_getAbsPathImpl(enum resource_t type, const char* relPath) {
                 _mkdir(savePath);
         }
     }
+
+done:
+    if (*gFileLock)
+        ReleaseMutex(*gFileLock);
 
     // fprintf(stderr, "ret: %s\n", ret);
 
