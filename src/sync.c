@@ -111,9 +111,22 @@ void report_framerate() {
     }
 }
 
+static uint32_t tdiff;
+
+static inline
+void update_tdiff() {
+    static uint32_t prev;
+
+    uint32_t now = sync_getticks();
+    tdiff = now - prev;
+    prev = now;
+}
+
 __attribute__ ((cdecl))
 void sync_dosync() {
     int32_t sleep_count = 0;
+
+    update_tdiff();
 
     static uint32_t nms_rem;
     static uint32_t prev_time;
@@ -166,16 +179,9 @@ void report_framerate_trampl(), scale_event_rate_trampl();
 
 __attribute__ ((cdecl))
 void scale_event_rate() {
-    static uint32_t prev;
-
-    uint32_t now = sync_getticks();
-    uint32_t tdiff = now - prev;
-
     float rate = 1.0f;
     if (tdiff > 1000 / FPS_COMPENSATE_THRESH)
         rate = (float)tdiff/ 17.0f;
-
-    prev = now;
 
     *(uint32_t*)0x70e67c0 = (uint32_t)rate;
     *(uint32_t*)0x70e67a4 = (uint32_t)rate;
