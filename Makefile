@@ -11,12 +11,14 @@ SRC := \
 	src/patch.c \
 	src/get_path.c \
 	src/video.c \
-	src/sync.c
+	src/sync.c \
+	src/anim.c
 
 SRC_ASM := \
 	src/fov.S \
 	src/video_init.S \
-	src/sync_trampl.S
+	src/sync_trampl.S \
+	src/anim_trampl.S
 
 ifeq ($(WRAP_DINPUT), 1)
 	DEF += "-DWRAP_DINPUT"

@@ -7,6 +7,7 @@
 #define _USE_MATH_DEFINES
 #include <tgmath.h>
 
+#include "anim.h"
 #include "get_path.h"
 #include "patch.h"
 #include "prefs.h"
@@ -230,6 +231,7 @@ static void init(HANDLE hModule) {
             else {
                 sync_init(60, showfps);
                 sync_patch();
+                anim_patch();
             }
         }
     }

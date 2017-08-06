@@ -184,9 +184,9 @@ void scale_event_rate() {
         rate = (float)tdiff/ 17.0f;
 
     *(uint32_t*)0x70e67c0 = (uint32_t)rate;
-    *(uint32_t*)0x70e67a4 = (uint32_t)rate;
+    // *(uint32_t*)0x70e67a4 = (uint32_t)rate; /* unused */
     *(float*)0x70e67a8 = rate;
-    *(float*)0x70e67b4 = rate;
+    // *(float*)0x70e67b4 = rate; /* unused */
     *(float*)0x70e67ac = rate * 0.016666666666666666f; /* gRendertimeScaled */
     *(float*)0x70e67c4 = 60.0f / rate; /* gFPSScaled */
 }
